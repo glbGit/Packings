@@ -522,7 +522,7 @@ void Packing::NewState( int i, double NewDiameter, std::vector<System::Interacti
     return;
 }
 
-/* Perform one Monte Carlo step, consisting in N elementary steps. */
+/* Perform one Monte Carlo step, consisting of N elementary steps. */
 int Packing::Step()
 {
     int accept = 0;
