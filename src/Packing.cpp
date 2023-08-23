@@ -94,7 +94,7 @@ void Packing::Make()
                 this->p[i].diameter = PowerLaw( sigma_min, sigma_max ); 
                 break;
             case SizeDispersity::LogNormal:
-                this->p[i].diameter = LogNormal(sigma_min, sigma_max, mu, sigma); 
+                this->p[i].diameter = LogNormal( sigma_min, sigma_max, mu, sigma ); 
                 break;
 
             default:
