@@ -29,7 +29,7 @@ namespace Constant
     static const double          T = 0.04;                          // Temperature
     static const double          PSwap = 0.2;                       // Swap probability
     static const double          delta_r = 0.05;                    // Max side displacement 
-    static const double          phi_max = 0.2;                     // Max packing fraction        
+    static const double          phi_max = 0.7;                     // Max packing fraction        
     static const bool            InitialRelaxation = false;         // If true, perform a very brief relaxation in a soft repulsive potential. 
 
     /* Diameter distribution */

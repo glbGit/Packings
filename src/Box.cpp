@@ -1,10 +1,10 @@
 #include "Box.h"
 
-float Box::Variables::L = 10;
-float Box::Variables::V = L * L * L;
-
 using namespace Box;
 using namespace Constant;
+
+float Box::Variables::L = 10;
+float Box::Variables::V = L * L * L;
 
 double BoundaryConditions::Periodic::Image( double x )
 {
