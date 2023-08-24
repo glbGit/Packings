@@ -3,8 +3,6 @@
 #include "pch.h"
 #include "Constant.h"
 
-#define D 3
-
 struct Direction /* Angles are defined according to polar coordinates: theta[0,Pi], phi(-Pi,Pi] */
 {
     double theta;

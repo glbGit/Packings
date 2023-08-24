@@ -5,6 +5,7 @@ using namespace System;
 using namespace System::Variables;
 using namespace System::Interaction;
 using namespace Constant;
+using namespace Utils;
 
 double System::Variables::sigma_min = Dmin;
 double System::Variables::sigma_max = Dmax;
@@ -19,8 +20,8 @@ int main()
 	int steps = 0; 
 
 	/* Entry point */
+	Time( On::Begin );
 	Packing R;
-	Packing::Time(1);
 	R.Make();
 
 	/* Relax */
@@ -47,6 +48,6 @@ int main()
 	R.PrintDiameterDistribution();
 	R.PrintSystemInfo( steps );
 
-	Packing::Time(0);
+	Time( On::End );
 	return 0;
 }

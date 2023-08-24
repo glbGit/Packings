@@ -11,6 +11,7 @@ using namespace System::Variables;
 using namespace System::Interaction;
 using namespace Distribution;
 using namespace Constant;
+using namespace Utils;
 
 inline double Distribution::Uniform( double a, double b )  {  return u_rand * ( b - a ) + a;  }
 
@@ -121,34 +122,41 @@ void Packing::Make()
     this->FullUpdate();
 }
 
-void Packing::Make( const char *filename )
+void Packing::Make( const char * filename )
 {   
     int entries = 0;
     char line[256];
+	char _filename[256];
+	sprintf( _filename, "../data/%s", filename );
     FILE * stream;
-    stream = fopen( filename, "r" );
-    if ( stream == NULL ) { printf( "Error (input): File \"%s\" not found.\n\n", filename ); exit(1); }
-    printf( "Copying system configuration from file \"%s\"..    ", filename );
-    for ( int i = 0; i < N; i++ ) 
+    stream = fopen( _filename, "r" );
+    if ( stream != NULL ) 
     {
-        fscanf( stream, "%[^\n]", line );
-        if ( line[0] == '\0' ) { printf( "Error (input): Too few entries (%d/%lu).\n\n", i, N ); exit(1); }
-	    entries = sscanf( line, "%lg %lg %lg %lg", &this->p[i].position.m_x, &this->p[i].position.m_y, &this->p[i].position.m_z, &this->p[i].diameter );
-        this->p[i].diameter = this->p[i].diameter + this->p[i].diameter;
-	    fgetc( stream );
-        line[0] = '\0';
-        if ( entries != 4 ) { printf( "Error (input): Entry format must be [x] [y] [z] [rad].\n\n" ); exit(1); }
+        printf( "Copying system configuration from file \"%s\"..    ", filename );
+        for ( int i = 0; i < N; i++ ) 
+        {
+            int result = fscanf( stream, "%[^\n]", line );
+            if ( result != 0 )
+            {
+                if ( line[0] == '\0' ) Exit( INSUFFICIENT_DATA, { "Too few entries (", to_cstr(i), "/", to_cstr(N), ")." } );
+	            entries = sscanf( line, "%lg %lg %lg %lg", &this->p[i].position.m_x, &this->p[i].position.m_y, &this->p[i].position.m_z, &this->p[i].diameter );
+                this->p[i].diameter = this->p[i].diameter + this->p[i].diameter;
+	            fgetc( stream );
+                line[0] = '\0';
+                if ( entries != 4 ) Exit( WRONG_INPUT_FORMAT, { "Entry format must be [x] [y] [z] [rad]." } );
 
-        int x = static_cast<int>( this->p[i].position.m_x / Sector::s_length );
-        int y = static_cast<int>( this->p[i].position.m_y / Sector::s_length );
-        int z = static_cast<int>( this->p[i].position.m_z / Sector::s_length );
-        int l = Sector::Find( x, y, z );
-        this->s[l].member_list.push_back(i);
-        this->p[i].sector = l;
-        this->p[i].id = i;
-        this->a[i] = a0 * this->p[i].diameter;
-	}
-    fclose( stream );
+                int x = static_cast<int>( this->p[i].position.m_x / Sector::s_length );
+                int y = static_cast<int>( this->p[i].position.m_y / Sector::s_length );
+                int z = static_cast<int>( this->p[i].position.m_z / Sector::s_length );
+                int l = Sector::Find( x, y, z );
+                this->s[l].member_list.push_back(i);
+                this->p[i].sector = l;
+                this->p[i].id = i;
+                this->a[i] = a0 * this->p[i].diameter;
+            } else Exit( EMPTY_LINE, { "Empty line (", to_cstr( i + 1 ), ")." } );
+	    }
+        fclose( stream );
+    } else Exit( DIR_NOT_FOUND, { "File \"", filename, "\" not found." } );
     printf( "Particles successfully added.\n" );
     this->FullUpdate();
 }
@@ -156,52 +164,62 @@ void Packing::Make( const char *filename )
 void Packing::PrintToFile() 
 {
     FILE * out;
-    out = fopen( "data/output.dat", "w+" );
-    if ( out == NULL ) { printf( "Error (input): Destination folder \"../data\" not found.\n\n" ); exit( DIR_NOT_FOUND ); }
-    for ( int i = 0; i < N; i++ )
-        fprintf( out, "%.16f %.16f %.16f %.16f\n", p[i].position.m_x, p[i].position.m_y, p[i].position.m_z, 0.5*p[i].diameter );
-    fclose( out );
+    out = fopen( "../data/output.dat", "w+" );
+    if ( out != NULL )
+    {
+        for ( int i = 0; i < N; i++ )
+            fprintf( out, "%.16f %.16f %.16f %.16f\n", p[i].position.m_x, p[i].position.m_y, p[i].position.m_z, 0.5 * p[i].diameter );
+        fclose( out );
+    } else Exit( DIR_NOT_FOUND, { "Destination folder \"/data\" not found." } );
 }
 
-void Packing::PrintToFile( const char *filename ) 
+void Packing::PrintToFile( const char * filename ) 
 {
     FILE * out;
 	char _filename[256];
-	sprintf( _filename, "data/%s", filename );
+	sprintf( _filename, "../data/%s", filename );
     out = fopen( _filename, "w+" );
-    if ( out == NULL ) { printf( "Error (input): Destination folder \"../data\" not found.\n\n" ); exit( DIR_NOT_FOUND ); }
-    for ( int i = 0; i < N; i++ )
-        fprintf( out, "%.16f %.16f %.16f %.16f\n", p[i].position.m_x, p[i].position.m_y, p[i].position.m_z, 0.5*p[i].diameter );
-    fclose( out );
+    if ( out != NULL ) 
+    {
+        for ( int i = 0; i < N; i++ )
+            fprintf( out, "%.16f %.16f %.16f %.16f\n", p[i].position.m_x, p[i].position.m_y, p[i].position.m_z, 0.5 * p[i].diameter );
+        fclose( out );
+    } else Exit( DIR_NOT_FOUND, { "Destination folder \"/data\" not found." } ); 
 }
 
-void Packing::PrintToFile( FILE *f,int frame ) 
+void Packing::PrintToFile( FILE * f, int frame ) 
 {
-    for ( int i = 0; i < N; i++ )
-        fprintf( f, "%.16f %.16f %.16f %.16f %d\n", p[i].position.m_x, p[i].position.m_y, p[i].position.m_z, 0.5*p[i].diameter, frame );
+    if ( f != NULL )
+    {
+        for ( int i = 0; i < N; i++ )
+            fprintf( f, "%.16f %.16f %.16f %.16f %d\n", p[i].position.m_x, p[i].position.m_y, p[i].position.m_z, 0.5 * p[i].diameter, frame );
+    }
+    else Exit( NULL_PTR, { "Null pointer." } );
 }
 
 /* Prints diameter distribution. */
 void Packing::PrintDiameterDistribution()
 { 
-    FILE * file = fopen( "data/diameter_distribution.dat","w+" );
-    if ( file == NULL ) { printf( "Error (input): Destination folder \"../data\" not found.\n\n" ); exit( DIR_NOT_FOUND ); }
-	int count;
-	for ( double q = sigma_min; q <= sigma_max; q += 0.01 ) {      
-		count = 0;
-		for ( int i = 0; i < N; i++ ) 
-            if ( this->p[i].diameter >= q && this->p[i].diameter < q + 0.01 ) count++;
-		fprintf( file, "%g %d\n", q, count );
-	}
-	fclose( file );
+    FILE * file = fopen( "../data/diameter_distribution.dat", "w+" );
+    if ( file != NULL )
+    {
+        int count;
+	    for ( double q = sigma_min; q <= sigma_max; q += 0.01 ) {      
+		    count = 0;
+		    for ( int i = 0; i < N; i++ ) 
+                if ( this->p[i].diameter >= q && this->p[i].diameter < q + 0.01 ) count++;
+		    fprintf( file, "%g %d\n", q, count );
+	    }
+	    fclose( file );
+    } else Exit( DIR_NOT_FOUND, { "Destination folder \"/data\" not found." } );
 }
 
 /* Prints particles first neighbors */
 void Packing::PrintFirstNeighbors()
 {
-	FILE * out = fopen( "data/first_neighbors.dat", "w" );
-    if ( out == NULL ) { printf( "Error (input): Destination folder \"../data\" not found.\n\n" ); exit( DIR_NOT_FOUND ); }
-	for ( int i = 0; i < N; i++ )
+	FILE * out = fopen( "../data/first_neighbors.dat", "w" );
+    if ( out != NULL ) 
+    {for ( int i = 0; i < N; i++ )
 	{
 		fprintf( out, "p%d: ", i );
 		for ( auto k : this->p[i].first_neighbors )
@@ -211,6 +229,7 @@ void Packing::PrintFirstNeighbors()
 		fprintf( out, "\n" );
 	}
 	fclose( out );
+    } else Exit( DIR_NOT_FOUND, { "Destination folder \"/data\" not found." } );
 }
 
 /* Prints system observables. */
@@ -261,6 +280,7 @@ double Packing::EvalSigma()
     case SizeDispersity::PowerLaw:
         s = 2 * sigma_max * sigma_min / ( sigma_max + sigma_min );
         break;
+
     case SizeDispersity::LogNormal:
     default:
         s = 0;
@@ -319,6 +339,7 @@ void Packing::FullUpdate()
                         this->p[i].first_neighbors.push_back(j);
                         this->p[j].first_neighbors.push_back(i);
                         break;
+
                     default:
                         this->c[ Hash<N>( i, j ) ].energy = 0;
                         break;
@@ -350,6 +371,7 @@ void Packing::FullUpdate()
                         this->p[i].first_neighbors.push_back(j);
                         this->p[j].first_neighbors.push_back(i);
                         break;
+
                     default:
                         this->c[ Hash<N>( i, j ) ].energy = 0;
                         break;
@@ -391,6 +413,7 @@ void Packing::Update( System::State state )
                     case Interaction::State::FirstNeighbor:
                         this->c[id].energy = exp( -b * ( sqrt(r_ij) - sigma_ij ) );
                         break;
+
                     default:
                         break;
                     } 
@@ -435,6 +458,7 @@ void Packing::Update( System::State state )
                         {
                         case Interaction::State::Free:
                             break;
+
                         default:
                             this->p[i].first_neighbors.push_back(j);
                             this->p[j].first_neighbors.push_back(i);
@@ -495,6 +519,7 @@ void Packing::NewState( int i, Vector & NewPosition, std::vector<System::Interac
             case Interaction::State::Overlap:
                 flag = false;
                 return;
+
             default:
                 c_p.push_back( {id} );
                 break;
@@ -514,6 +539,7 @@ void Packing::NewState( int i, double NewDiameter, std::vector<System::Interacti
             case Interaction::State::Overlap:
                 flag = false;
                 return;
+
             default:
                 c_p.push_back( {id} );
                 break;
@@ -528,40 +554,105 @@ int Packing::Step()
     int accept = 0;
     switch ( interaction_type ) 
     {
-    case Potential::Hard:
-    {      
-        double _x, _y, _z, rnd;
-        bool no_overlap;
-        Vector _r;    
-        std::vector<Local> c_p;                                                                     
-        for ( int i = 0; i < N; i++ ) 
+        case Potential::Hard:
+        {      
+            double _x, _y, _z, rnd;
+            bool no_overlap;
+            Vector _r;    
+            std::vector<Local> c_p;                                                                     
+            for ( int i = 0; i < N; i++ ) 
+            {
+                no_overlap = true;
+                rnd = u_rand;
+                if ( rnd < 1 - PSwap )                    /* Standard Monte Carlo move */
+                { 
+                    _x = Image( this->p[i].position.m_x + ( u_rand - 0.5 ) * delta_r );
+                    _y = Image( this->p[i].position.m_y + ( u_rand - 0.5 ) * delta_r );
+                    _z = Image( this->p[i].position.m_z + ( u_rand - 0.5 ) * delta_r );
+                    _r.Set( _x, _y, _z );
+                    this->NewState( i, _r, c_p, no_overlap );
+                    if ( no_overlap ) 
+                    {
+                        accept++;
+                        this->p[i].position.Set( _x, _y, _z );
+                        /* Sync overlaps */                           
+                        for ( auto & l : c_p ) 
+                        {
+                            if ( this->c[l.id].overlap ) 
+                            {
+                                this->c[l.id].overlap = false;
+                                this->overlap_list.remove(l.id);
+                            }
+                        }
+                        /* Sync sectors */
+                        int x = static_cast<int>( this->p[i].position.m_x / Sector::s_length );
+                        int y = static_cast<int>( this->p[i].position.m_y / Sector::s_length );
+                        int z = static_cast<int>( this->p[i].position.m_z / Sector::s_length );
+                        int new_sector = Sector::Find( x, y, z );
+                        if ( new_sector != this->p[i].sector ) 
+                        {
+                            this->s[ this->p[i].sector ].member_list.remove(i);
+                            this->s[ new_sector ].member_list.push_back(i);
+                            this->p[i].sector = new_sector;
+                        }
+                    } 
+                } else                                  /* Swap */
+                {
+                    int j = rand() % N;
+                    if ( this->p[j].diameter > this->p[i].diameter ) this->NewState( i, this->p[j].diameter, c_p, no_overlap );
+                    else this->NewState( j, this->p[i].diameter, c_p, no_overlap );
+                    if ( no_overlap ) 
+                    {
+                        accept++;
+                        this->Swap( i, j );
+                        /* Sync overlaps */                            
+                        for ( auto & l : c_p ) 
+                        {
+                            if ( this->c[l.id].overlap ) 
+                            {
+                                this->c[l.id].overlap = false;
+                                this->overlap_list.remove(l.id);
+                            }
+                        }
+                    } 
+                }
+                c_p.clear(); 
+            }
+            break;
+        }
+        case Potential::SoftRepulsive: 
         {
-            no_overlap = true;
-            rnd = u_rand;
-            if ( rnd < 1 - PSwap )                    /* Standard Monte Carlo move */
-            { 
+            double _x, _y, _z, rnd, dE;
+            bool no_overlap;
+            Vector _r;
+            std::vector<Local> c_p;
+            for ( int i = 0; i < N; i++ ) 
+            {
+                no_overlap = true;
                 _x = Image( this->p[i].position.m_x + ( u_rand - 0.5 ) * delta_r );
                 _y = Image( this->p[i].position.m_y + ( u_rand - 0.5 ) * delta_r );
                 _z = Image( this->p[i].position.m_z + ( u_rand - 0.5 ) * delta_r );
                 _r.Set( _x, _y, _z );
-                this->NewState( i, _r, c_p, no_overlap );
-                if ( no_overlap ) 
+                dE = this->NewState_( i, _r, c_p, no_overlap );
+                rnd = u_rand;
+                if ( rnd < exp( -dE / T ) && no_overlap ) 
                 {
                     accept++;
                     this->p[i].position.Set( _x, _y, _z );
-                    /* Sync overlaps */                           
+                    /* Sync energy and overlaps */ 
                     for ( auto & l : c_p ) 
                     {
+                        this->c[l.id].energy = l.energy;
                         if ( this->c[l.id].overlap ) 
                         {
                             this->c[l.id].overlap = false;
                             this->overlap_list.remove(l.id);
                         }
                     }
-                    /* Sync sectors */
-                    int x = static_cast<int>( this->p[i].position.m_x / Sector::s_length );
-                    int y = static_cast<int>( this->p[i].position.m_y / Sector::s_length );
-                    int z = static_cast<int>( this->p[i].position.m_z / Sector::s_length );
+                    /* Sync sector */
+                    int x = static_cast<int>( _x / Sector::s_length );
+                    int y = static_cast<int>( _y / Sector::s_length );
+                    int z = static_cast<int>( _z / Sector::s_length );
                     int new_sector = Sector::Find( x, y, z );
                     if ( new_sector != this->p[i].sector ) 
                     {
@@ -569,78 +660,13 @@ int Packing::Step()
                         this->s[ new_sector ].member_list.push_back(i);
                         this->p[i].sector = new_sector;
                     }
-                } 
-            } else                                  /* Swap */
-            {
-                int j = rand() % N;
-                if ( this->p[j].diameter > this->p[i].diameter ) this->NewState( i, this->p[j].diameter, c_p, no_overlap );
-                else this->NewState( j, this->p[i].diameter, c_p, no_overlap );
-                if ( no_overlap ) 
-                {
-                    accept++;
-                    this->Swap( i, j );
-                    /* Sync overlaps */                            
-                    for ( auto & l : c_p ) 
-                    {
-                        if ( this->c[l.id].overlap ) 
-                        {
-                            this->c[l.id].overlap = false;
-                            this->overlap_list.remove(l.id);
-                        }
-                    }
-                } 
-            }
-            c_p.clear(); 
-        }
-        break;
-    }
-    case Potential::SoftRepulsive: 
-    {
-        double _x, _y, _z, rnd, dE;
-        bool no_overlap;
-        Vector _r;
-        std::vector<Local> c_p;
-        for ( int i = 0; i < N; i++ ) 
-        {
-            no_overlap = true;
-            _x = Image( this->p[i].position.m_x + ( u_rand - 0.5 ) * delta_r );
-            _y = Image( this->p[i].position.m_y + ( u_rand - 0.5 ) * delta_r );
-            _z = Image( this->p[i].position.m_z + ( u_rand - 0.5 ) * delta_r );
-            _r.Set( _x, _y, _z );
-            dE = this->NewState_( i, _r, c_p, no_overlap );
-            rnd = u_rand;
-            if ( rnd < exp( -dE / T ) && no_overlap ) 
-            {
-                accept++;
-                this->p[i].position.Set( _x, _y, _z );
-                /* Sync energy and overlaps */ 
-                for ( auto & l : c_p ) 
-                {
-                    this->c[l.id].energy = l.energy;
-                    if ( this->c[l.id].overlap ) 
-                    {
-                        this->c[l.id].overlap = false;
-                        this->overlap_list.remove(l.id);
-                    }
                 }
-                /* Sync sector */
-                int x = static_cast<int>( _x / Sector::s_length );
-                int y = static_cast<int>( _y / Sector::s_length );
-                int z = static_cast<int>( _z / Sector::s_length );
-                int new_sector = Sector::Find( x, y, z );
-                if ( new_sector != this->p[i].sector ) 
-                {
-                    this->s[ this->p[i].sector ].member_list.remove(i);
-                    this->s[ new_sector ].member_list.push_back(i);
-                    this->p[i].sector = new_sector;
-                }
+                c_p.clear();
             }
-            c_p.clear();
+            break;
         }
-        break;
-    }
-    default:
-        break;
+        default:
+            break;
     }
     return accept;
 }
@@ -674,8 +700,8 @@ void Packing::Compress( int &steps )
                 this->PrintToFile( "output.dat" );
                 this->PrintDiameterDistribution();
                 this->PrintSystemInfo( steps + count );
-                Time(0);
-                exit(1);  
+                Time( On::End );
+                exit( STEPS_OVERFLOW );
             }
         }
         printf( " - mcs = %d\n", count );
@@ -701,30 +727,6 @@ Interaction::State Packing::State( double r_sq, double sigma )
         else if ( r_sq < sigma - cutoff ) return Interaction::State::Overlap;  
         else return Interaction::State::Contact;           
     } 
-}
-
-/**
- * @brief Print date and time together with a message.
- * @param 0 Exit message; 
- * @param 1(any_integer) Welcome message. 
- */
-void Packing::Time( int n )
-{
-    /* Time */
-    char time_s[26];
-    time_t rawtime;
-	struct tm timeinfo;
-	time(&rawtime);
-#ifdef _LINUX
-	localtime_r( &rawtime, &timeinfo );
-    asctime_r( &timeinfo, time_s );
-#endif
-#ifdef _WINDOWS
-	localtime_s( &timeinfo, &rawtime );
-    asctime_s( time_s, &timeinfo );
-#endif
-	if ( n == 0 ) printf( "\nExiting program...    %s\n", time_s );
-    else printf( "Running program...    %s\n", time_s );
 }
 
 //----------------------------------------------------------------------------------------------------------------------------

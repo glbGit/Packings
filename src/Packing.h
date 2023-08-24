@@ -62,6 +62,8 @@ namespace System
     }
 }
 
+using namespace System;
+
 class Packing
 {
 public:
@@ -92,12 +94,11 @@ public:
     bool                            DoesOverlap( int, int );
     bool                            Drift( int );
 
-    static System::Interaction::State         State( double, double );
-    static void                               Time( int );
+    static Interaction::State       State( double, double );
     
     Particle                        *p;
     Box::Sector                     *s;
-    System::Interaction::Local      *c;
+    Interaction::Local              *c;
     double                          *a;
     std::list<ULL>                  overlap_list;
     double                          energy;
