@@ -21,7 +21,9 @@ namespace Packings
     enum class On
     {
         Begin,
-        End
+        End,
+        Start,
+        Exit
     };
     
     int iPow( int base, int exponent );

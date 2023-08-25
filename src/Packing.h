@@ -47,10 +47,10 @@ namespace System
     
     namespace Variables
     {
-        extern double sigma_min;
-        extern double sigma_max;
-        extern double growth_min;
-        extern double growth_max;
+        extern double s_min;
+        extern double s_max;
+        extern double g_min;
+        extern double g_max;
         extern Distribution::Type distribution_type;
         extern Interaction::Potential interaction_type;
     }
@@ -81,14 +81,15 @@ public:
     void                            PrintToFile( FILE *, int );
     void                            PrintDiameterDistribution();
     void                            PrintFirstNeighbors();
-    void                            PrintSystemInfo( int );
+    void                            PrintSystemInfo( On time );
     int                             Step();
-    void                            Compress( int & );
+    void                            Compress();
 
     bool                            DoesOverlap( int, int );
     bool                            Drift( int );
 
     static Interaction::State       State( double, double );
+
     
     Particle                        *p;
     Box::Sector                     *s;
@@ -97,4 +98,6 @@ public:
     std::list<ULL>                  overlap_list;
     double                          energy;
     double                          phi;
+    int                             steps = 0;
+    int                             accepted = 0;
 };

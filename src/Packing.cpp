@@ -45,11 +45,12 @@ Packing::~Packing()
 
 void Packing::Initialize()
 {
-    sigma_min = Distribution::GetMin( this->g );
-    sigma_max = Distribution::GetMax( this->g );
-    growth_min = sigma_min * a0;
-    growth_max = sigma_max * a0;
+    s_min = Distribution::GetMin( this->g );
+    s_max = Distribution::GetMax( this->g );
+    g_min = s_min * a0;
+    g_max = s_max * a0;
     distribution_type = GetDistributionInfo().type;
+
 }
 
 void Packing::Make()
@@ -168,7 +169,7 @@ void Packing::PrintDiameterDistribution()
     if ( file != NULL )
     {
         int count;
-	    for ( double q = sigma_min; q <= sigma_max; q += 0.01 ) {      
+	    for ( double q = s_min; q <= s_max; q += 0.01 ) {      
 		    count = 0;
 		    for ( int i = 0; i < N; i++ ) 
                 if ( this->p[i].diameter >= q && this->p[i].diameter < q + 0.01 ) count++;
@@ -197,20 +198,53 @@ void Packing::PrintFirstNeighbors()
 }
 
 /* Prints system observables. */
-void Packing::PrintSystemInfo( int mcs )
-{
-	printf( 
-        "\nSystem info:\n"
-        "E_tot = %g\n"
-        "Overlaps = %lu\n"
-        "N = %lu\n"
-        "Monte Carlo steps = %d\n"
-        "Volume fraction = %.6f\n"
-        "Diameter = [%.6f, %.6f]\n"
-        "\n",
-        this->energy, static_cast<UL>( this->overlap_list.size() ), N, mcs, this->phi, sigma_min, sigma_max
-    );
-    if ( sigma_max > Sector::s_length ) printf( "WARNING: Maximum diameter exceeding sector length! (May generate overlaps.)\n" );
+void Packing::PrintSystemInfo( On time )
+{    
+	switch ( time )
+	{
+    case On::Start:
+		printf(
+			"-----------------------------------------------\n"
+			"Parameters:\n"
+			"D = %u\n"
+			"N = %u\n"
+			"L = %g\n"
+			"PSwap = %g\n"
+			"DType = %d\n"
+			"Ratio = %g\n"
+			"Cells = %d\n"
+			"Growth rate = %g\n"
+			"Phi = %g\n"
+			"Phi_t = %g\n"
+			"dr = %g\n"
+			"-----------------------------------------------\n",
+			D, N, L, PSwap, DType, Ratio, 999,  
+			a0, this->phi, Phi_t, delta_r
+		);
+		break;
+	
+    case On::Exit:
+		printf(
+			"-----------------------------------------------\n"
+			"System info:\n"
+            "Energy = %g\n"
+			"Overlaps = %u\n"
+			"Monte Carlo steps = %d\n"
+			"Acceptance rate = %.3f\n"
+			"Volume fraction = %.6f\n"
+			"Size dispersity = %.6f\n"
+			"Diameter = [%.6f, %.6f]\n"
+			"Growth rate = [%.2e, %.2e]\n"
+			"-----------------------------------------------\n",
+			this->energy, this->Overlaps(), this->steps, (double) this->accepted / this->steps / N, this->phi,
+			999., s_min, s_max, g_min, g_max
+		);
+		if ( s_max > Sector::s_length ) printf( "WARNING: Maximum diameter exceeding sector length! (May generate overlaps.)\n" );
+		break;
+
+	default:
+		break;
+	}
 }
 
 inline double Packing::VolumeFraction()
@@ -609,11 +643,12 @@ int Packing::Step()
         default:
             break;
     }
+    this->steps = this->steps + 1;
     return accept;
 }
 
 /* Compress the system by growing particles. */
-void Packing::Compress( int & steps )
+void Packing::Compress()
 {
     printf( "Compression in progress..    " ); 
     while ( this->phi < Phi_t ) 
@@ -626,10 +661,10 @@ void Packing::Compress( int & steps )
         }
         this->Update( System::State::Compression );
         this->phi = this->VolumeFraction();
-        printf( "Overlaps %lu, phi = %.6f", static_cast<int>( this->overlap_list.size() ), this->phi ); 
+        printf( "Overlaps %lu, phi = %.6f", this->Overlaps(), this->phi );
         while ( this->overlap_list.size() > 0 ) 
         {
-            accept = this->Step();
+            this->accepted = this->accepted + this->Step();
             this->Update( System::State::Relaxation );
             count++;
             if ( count > MaxSteps ) 
@@ -640,16 +675,16 @@ void Packing::Compress( int & steps )
                 this->FullUpdate();
                 this->PrintToFile( "output.dat" );
                 this->PrintDiameterDistribution();
-                this->PrintSystemInfo( steps + count );
+                this->PrintSystemInfo( On::Exit );
                 Time( On::End );
                 exit( STEPS_OVERFLOW );
             }
         }
         printf( " - mcs = %d\n", count );
-        sigma_min = sigma_min + growth_min;
-        sigma_max = sigma_max + growth_max;
-        steps  = steps + count;
+        s_min = s_min + g_min;
+        s_max = s_max + g_max;
     }  
+                this->FullUpdate();
     printf( "Completed.\n" ); 
 }
 
@@ -657,8 +692,8 @@ void Packing::Compress( int & steps )
 Interaction::State Packing::State( double r_sq, double sigma )
 {
     double r_cut_sq;
-    if ( interaction_type == Potential::Hard ) r_cut_sq = sigma_max + 2 * delta_r;   
-    else r_cut_sq = 0.5 * sigma_max + sigma + 2 * delta_r;
+    if ( interaction_type == Potential::Hard ) r_cut_sq = s_max + 2 * delta_r;   
+    else r_cut_sq = 0.5 * s_max + sigma + 2 * delta_r;
     r_cut_sq = r_cut_sq * r_cut_sq;
 	if ( r_sq > r_cut_sq ) return Interaction::State::Free;
     else

@@ -31,8 +31,8 @@ namespace Constant
     static constexpr double      T = 0.04;                              // Temperature
     static constexpr double      PSwap = 0.2;                           // Swap probability
     static constexpr double      delta_r = 0.05;                        // Max side displacement 
-    static constexpr double      Phi_0 = 0.1;                           // Initial packing fraction
-    static constexpr double      Phi_t = 0.3;                           // Target packing fraction
+    static constexpr double      Phi_0 = 0.99;                           // Initial packing fraction
+    static constexpr double      Phi_t = 0.999;                           // Target packing fraction
     static const bool            InitialRelaxation = false;             // If true, perform a very brief relaxation in a soft repulsive potential. 
 
     /* Diameter distribution */

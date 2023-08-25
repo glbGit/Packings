@@ -7,10 +7,10 @@ using namespace System::Interaction;
 using namespace Constant;
 using namespace Packings;
 
-double System::Variables::sigma_min;
-double System::Variables::sigma_max;
-double System::Variables::growth_min;
-double System::Variables::growth_max;
+double System::Variables::s_min;
+double System::Variables::s_max;
+double System::Variables::g_min;
+double System::Variables::g_max;
 Distribution::Type System::Variables::distribution_type;
 Potential System::Variables::interaction_type = Potential::Hard;
 
@@ -19,12 +19,12 @@ Potential System::Variables::interaction_type = Potential::Hard;
 int main() 
 {
 	srand(321);
-	int steps = 0; 
 
 	/* Entry point */
 	Time( On::Begin );
 	Packing R;
 	R.Make();
+	R.PrintSystemInfo( On::Start );
 
 	/* Relax */
 	if ( InitialRelaxation )
@@ -43,12 +43,12 @@ int main()
 
 	/* Compression */
 	interaction_type = Potential::Hard;
-	R.Compress( steps );
+	R.Compress();
 
 	/* Print */
 	R.PrintToFile();
 	R.PrintDiameterDistribution();
-	R.PrintSystemInfo( steps );
+	R.PrintSystemInfo( On::Exit );
 
 	Time( On::End );
 	return 0;
