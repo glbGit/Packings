@@ -11,7 +11,7 @@ using namespace System::Variables;
 using namespace System::Interaction;
 using namespace Distribution;
 using namespace Constant;
-using namespace Utils;
+using namespace Packings;
 
 inline double Distribution::Uniform( double a, double b )  {  return u_rand * ( b - a ) + a;  }
 

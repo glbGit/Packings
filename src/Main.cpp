@@ -5,7 +5,7 @@ using namespace System;
 using namespace System::Variables;
 using namespace System::Interaction;
 using namespace Constant;
-using namespace Utils;
+using namespace Packings;
 
 double System::Variables::sigma_min = Dmin;
 double System::Variables::sigma_max = Dmax;

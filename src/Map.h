@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "Particle.h"
 
-using namespace Utils;
+using namespace Packings;
 
 template <class T1, class T2>
 struct Pair

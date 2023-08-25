@@ -1,6 +1,7 @@
 #pragma once 
 
 #include "pch.h"
+#include "Utils.h"
 #include "Constant.h"
 
 struct Direction /* Angles are defined according to polar coordinates: theta[0,Pi], phi(-Pi,Pi] */
