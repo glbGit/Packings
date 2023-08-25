@@ -2,14 +2,24 @@
 
 using namespace Packings;
 
-int Packings::iPow(int base, int exponent)
+int Packings::iPow( int b, int e )
 {
-    return 0;
+    int res = 1;
+    while ( true )
+    {
+        if ( e & 1 ) res *= b;
+        e >>= 1;
+        if ( !e ) break;
+        b *= b;
+    }
+    return res;
 }
 
-unsigned long long Packings::Factorial(unsigned long long n)
+unsigned long long Packings::Factorial( unsigned long long n )
 {
-    return 0;
+    if ( n > 1 ) 
+        return n * Factorial( n - 1 );
+    else return 1;
 }
 
 /**
