@@ -13,37 +13,6 @@ using namespace Distribution;
 using namespace Constant;
 using namespace Packings;
 
-inline double Distribution::Uniform( double a, double b )  {  return u_rand * ( b - a ) + a;  }
-
-double Distribution::PowerLaw( double a, double b )
-{
-	double _a = A / pow( b, 3 );
-	double _b = A / pow( a, 3 );
-	double rnd = Uniform( _a, _b );
-	double x = pow( rnd/A, -1./3. );
-	return x;
-}
-
-double Distribution::LogNormal( double a, double b, double mu, double sigma )
-{
-    double _sigma = sqrt(log( sigma*sigma/mu/mu + 1 ));
-    double _mu = log(mu) - 0.5 * _sigma * _sigma;
-    double u1, u2, mag, z;
-    do 
-    {
-        do
-        {
-            u1 = u_rand;
-        }
-        while ( u1 <= cutoff );
-        u2 = u_rand;
-
-        mag = _sigma * sqrt( -2.0 * log(u1) );
-        z  = mag * cos(2 * Pi * u2) + _mu;
-    } while ( z < log(a) || z > log(b) );
-	return exp(z);
-}
-
 //----------------------------------------------------------------------------------------------------------
 
 Packing::Packing() :
@@ -57,54 +26,47 @@ Packing::Packing() :
         s[i].z = i % Sector::_S_; 
         s[i].MakeNeighbors();
     }
-    a = new double[N];
+    g = new double[N];
     p = new Particle[N];
     c = new Local[ (N * (N - 1) ) / 2 ];
     for ( int i = 0; i < N; i++ ) {
         p[i] = Particle{ NO_INDEX, Vector{}, Vector{}, 0 };
-        a[i] = 2;
+        g[i] = 2;
     }
 }
 
 Packing::~Packing() 
 {
-    delete[] a;
+    delete[] g;
     delete[] p;
     delete[] c;
     delete[] s;
 }
 
+void Packing::Initialize()
+{
+    sigma_min = Distribution::GetMin( this->g );
+    sigma_max = Distribution::GetMax( this->g );
+    growth_min = sigma_min * a0;
+    growth_max = sigma_max * a0;
+    distribution_type = GetDistributionInfo().type;
+}
+
 void Packing::Make()
 {   
     printf( "Adding %lu particles to the system..    ", N );
+    Distribution::Info info = GetDistributionInfo();
+
     for ( int i = 0; i < N; i++ ) 
     {
         if ( this->p[i].id == NO_INDEX ) 
         {
+            this->p[i].diameter = RandomDiameter( info );
             int count = 0;
-            switch ( diameter_distribution )
-            {
-            case SizeDispersity::Flat:
-                this->p[i].diameter = Uniform( sigma_min, sigma_max ); 
-                break;
-            case SizeDispersity::Binary:
-                if ( u_rand < 0.9 ) this->p[i].diameter = sigma_min;                                                       
-                else this->p[i].diameter = sigma_max;
-                break;
-            case SizeDispersity::PowerLaw:
-                this->p[i].diameter = PowerLaw( sigma_min, sigma_max ); 
-                break;
-            case SizeDispersity::LogNormal:
-                this->p[i].diameter = LogNormal( sigma_min, sigma_max, mu, sigma ); 
-                break;
-
-            default:
-                break;
-            }
 		    do 
             {
                 count++; 
-                if ( count > N ) { printf( "Failed to place particle %d.\n", i ); exit(1); }
+                if ( count > N ) Exit( RELOCATION_OVERFLOW, { "Failed to place particle ", to_cstr(i), "." } );
 			    this->p[i].position.setRandomComponents( 0, L );
 		    } while ( this->DoesOverlap( i, i ) );
 
@@ -115,10 +77,12 @@ void Packing::Make()
             this->s[l].member_list.push_back(i);
             this->p[i].sector = l;
             this->p[i].id = i;
-            this->a[i] = a0 * this->p[i].diameter;
+            this->g[i] = a0 * this->p[i].diameter;
         }
 	}
+
     printf( "Particles successfully added.\n" );
+    this->Initialize();
     this->FullUpdate();
 }
 
@@ -152,7 +116,7 @@ void Packing::Make( const char * filename )
                 this->s[l].member_list.push_back(i);
                 this->p[i].sector = l;
                 this->p[i].id = i;
-                this->a[i] = a0 * this->p[i].diameter;
+                this->g[i] = a0 * this->p[i].diameter;
             } else Exit( EMPTY_LINE, { "Empty line (", to_cstr( i + 1 ), ")." } );
 	    }
         fclose( stream );
@@ -266,29 +230,6 @@ double Packing::Energy()
 	return energy;
 }
 
-double Packing::EvalSigma()
-{
-    double s;
-    switch ( diameter_distribution )
-    {
-    case SizeDispersity::Flat:
-        s = ( sigma_max + sigma_min ) / 2;
-        break;
-    case SizeDispersity::Binary:
-        s = ( sigma_max + sigma_min ) / 2;
-        break;
-    case SizeDispersity::PowerLaw:
-        s = 2 * sigma_max * sigma_min / ( sigma_max + sigma_min );
-        break;
-
-    case SizeDispersity::LogNormal:
-    default:
-        s = 0;
-        break;
-    }
-    return s;
-}
-
 /* Swap two diameters. */ 
 void Packing::Swap( int i, int j )
 {
@@ -296,9 +237,9 @@ void Packing::Swap( int i, int j )
     temp = this->p[i].diameter;
     this->p[i].diameter = this->p[j].diameter;
     this->p[j].diameter = temp;
-    temp = this->a[i];
-    this->a[i] = this->a[j];
-    this->a[j] = temp;
+    temp = this->g[i];
+    this->g[i] = this->g[j];
+    this->g[j] = temp;
 }
 
 void Packing::FullUpdate()
@@ -675,13 +616,13 @@ int Packing::Step()
 void Packing::Compress( int & steps )
 {
     printf( "Compression in progress..    " ); 
-    while ( this->phi < phi_max ) 
+    while ( this->phi < Phi_t ) 
     {
         int count = 0, accept = 0;
         /* Compress */
         for ( int i = 0; i < N; i++ ) 
         {
-            this->p[i].diameter = this->p[i].diameter + this->a[i];
+            this->p[i].diameter = this->p[i].diameter + this->g[i];
         }
         this->Update( System::State::Compression );
         this->phi = this->VolumeFraction();
@@ -691,11 +632,11 @@ void Packing::Compress( int & steps )
             accept = this->Step();
             this->Update( System::State::Relaxation );
             count++;
-            if ( count > MAX_STEPS ) 
+            if ( count > MaxSteps ) 
             {  
                 printf( " - System failed to compress.\n\n" );
                 /* Decompress on exit */
-                for ( int i = 0; i < N; i++ ) this->p[i].diameter = this->p[i].diameter - this->a[i];
+                for ( int i = 0; i < N; i++ ) this->p[i].diameter = this->p[i].diameter - this->g[i];
                 this->FullUpdate();
                 this->PrintToFile( "output.dat" );
                 this->PrintDiameterDistribution();
@@ -705,8 +646,8 @@ void Packing::Compress( int & steps )
             }
         }
         printf( " - mcs = %d\n", count );
-        sigma_min = sigma_min + a_min;
-        sigma_max = sigma_max + a_max;
+        sigma_min = sigma_min + growth_min;
+        sigma_max = sigma_max + growth_max;
         steps  = steps + count;
     }  
     printf( "Completed.\n" ); 
@@ -723,8 +664,8 @@ Interaction::State Packing::State( double r_sq, double sigma )
     else
     {
         sigma = sigma * sigma;
-        if ( r_sq > sigma + cutoff )  return Interaction::State::FirstNeighbor;
-        else if ( r_sq < sigma - cutoff ) return Interaction::State::Overlap;  
+        if ( r_sq > sigma + epsilon )  return Interaction::State::FirstNeighbor;
+        else if ( r_sq < sigma - epsilon ) return Interaction::State::Overlap;  
         else return Interaction::State::Contact;           
     } 
 }

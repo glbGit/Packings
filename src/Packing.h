@@ -15,14 +15,6 @@ namespace System
         Relaxation
     };
 
-    enum class SizeDispersity 
-    {
-        Flat,
-        Binary,
-        PowerLaw,
-        LogNormal
-    };
-
     namespace Interaction
     {
         enum class State 
@@ -57,7 +49,9 @@ namespace System
     {
         extern double sigma_min;
         extern double sigma_max;
-        extern SizeDispersity diameter_distribution;
+        extern double growth_min;
+        extern double growth_max;
+        extern Distribution::Type distribution_type;
         extern Interaction::Potential interaction_type;
     }
 }
@@ -70,6 +64,7 @@ public:
     Packing();
     ~Packing();
 
+    void                            Initialize();
     void                            Make();
     void                            Make( const char * );
     int                             Overlaps();
@@ -87,7 +82,6 @@ public:
     void                            PrintDiameterDistribution();
     void                            PrintFirstNeighbors();
     void                            PrintSystemInfo( int );
-    double                          EvalSigma();
     int                             Step();
     void                            Compress( int & );
 
@@ -99,7 +93,7 @@ public:
     Particle                        *p;
     Box::Sector                     *s;
     Interaction::Local              *c;
-    double                          *a;
+    double                          *g;
     std::list<ULL>                  overlap_list;
     double                          energy;
     double                          phi;

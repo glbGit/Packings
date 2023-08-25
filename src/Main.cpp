@@ -7,10 +7,12 @@ using namespace System::Interaction;
 using namespace Constant;
 using namespace Packings;
 
-double System::Variables::sigma_min = Dmin;
-double System::Variables::sigma_max = Dmax;
+double System::Variables::sigma_min;
+double System::Variables::sigma_max;
+double System::Variables::growth_min;
+double System::Variables::growth_max;
+Distribution::Type System::Variables::distribution_type;
 Potential System::Variables::interaction_type = Potential::Hard;
-SizeDispersity System::Variables::diameter_distribution = SizeDispersity::PowerLaw;
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 

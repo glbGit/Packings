@@ -49,7 +49,7 @@ double Vector::operator*( Vector v ) { return m_x * v.m_x + m_y * v.m_y + m_z * 
 
 Vector Vector::operator^( Vector v ) { return Vector{ ( m_y * v.m_z - m_z * v.m_y ), ( m_z * v.m_x - m_x * v.m_z ), ( m_x * v.m_y - m_y * v.m_x ) }; }
 
-bool Vector::operator==( Vector v ) { if ( fabs( m_x - v.m_x ) < cutoff && fabs( m_y - v.m_y ) < cutoff && fabs( m_z - v.m_z ) < cutoff) return true; else return false; }
+bool Vector::operator==( Vector v ) { if ( fabs( m_x - v.m_x ) < epsilon && fabs( m_y - v.m_y ) < epsilon && fabs( m_z - v.m_z ) < epsilon) return true; else return false; }
 
 void Vector::operator+=( Vector & v ) { this->m_x = this->m_x + v.m_x; this->m_y = this->m_y + v.m_y; this->m_z = this->m_z + v.m_z; }
 
