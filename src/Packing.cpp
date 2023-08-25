@@ -127,7 +127,7 @@ void Packing::Make( const char * filename )
     int entries = 0;
     char line[256];
 	char _filename[256];
-	sprintf( _filename, "../data/%s", filename );
+	sprintf( _filename, "data/%s", filename );
     FILE * stream;
     stream = fopen( _filename, "r" );
     if ( stream != NULL ) 
@@ -164,7 +164,7 @@ void Packing::Make( const char * filename )
 void Packing::PrintToFile() 
 {
     FILE * out;
-    out = fopen( "../data/output.dat", "w+" );
+    out = fopen( "data/output.dat", "w+" );
     if ( out != NULL )
     {
         for ( int i = 0; i < N; i++ )
@@ -177,7 +177,7 @@ void Packing::PrintToFile( const char * filename )
 {
     FILE * out;
 	char _filename[256];
-	sprintf( _filename, "../data/%s", filename );
+	sprintf( _filename, "data/%s", filename );
     out = fopen( _filename, "w+" );
     if ( out != NULL ) 
     {
@@ -200,7 +200,7 @@ void Packing::PrintToFile( FILE * f, int frame )
 /* Prints diameter distribution. */
 void Packing::PrintDiameterDistribution()
 { 
-    FILE * file = fopen( "../data/diameter_distribution.dat", "w+" );
+    FILE * file = fopen( "data/diameter_distribution.dat", "w+" );
     if ( file != NULL )
     {
         int count;
@@ -217,7 +217,7 @@ void Packing::PrintDiameterDistribution()
 /* Prints particles first neighbors */
 void Packing::PrintFirstNeighbors()
 {
-	FILE * out = fopen( "../data/first_neighbors.dat", "w" );
+	FILE * out = fopen( "data/first_neighbors.dat", "w" );
     if ( out != NULL ) 
     {for ( int i = 0; i < N; i++ )
 	{
@@ -672,7 +672,7 @@ int Packing::Step()
 }
 
 /* Compress the system by growing particles. */
-void Packing::Compress( int &steps )
+void Packing::Compress( int & steps )
 {
     printf( "Compression in progress..    " ); 
     while ( this->phi < phi_max ) 
