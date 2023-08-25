@@ -45,11 +45,19 @@ void Packings::Time( On _time )
     switch ( _time )
     {
     case On::Begin: 
-        printf( "Running program...    %s\n", time_s );
+        printf(
+            "***********************************************\n"
+            "PACKINGS                                       \n"
+            "***********************************************\n"
+            "Running program...    %s\n", time_s 
+        );
         break;
 
     case On::End: 
-        printf( "\nExiting program...    %s\n", time_s );
+        printf(
+            "\nExiting program...    %s"
+            "***********************************************\n", time_s 
+        );
         break;
 
     default:
