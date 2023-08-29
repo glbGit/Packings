@@ -84,6 +84,8 @@ public:
     void                            PrintSystemInfo( On time );
     int                             Step();
     void                            Compress();
+    double                          GetMinDiameter();
+    double                          GetMaxDiameter();
 
     bool                            DoesOverlap( int, int );
     bool                            Drift( int );

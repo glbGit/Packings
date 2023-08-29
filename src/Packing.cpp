@@ -45,8 +45,8 @@ Packing::~Packing()
 
 void Packing::Initialize()
 {
-    s_min = Distribution::GetMin( this->g );
-    s_max = Distribution::GetMax( this->g );
+    s_min = GetMinDiameter();
+    s_max = GetMaxDiameter();
     g_min = s_min * a0;
     g_max = s_max * a0;
     distribution_type = GetDistributionInfo().type;
@@ -85,6 +85,10 @@ void Packing::Make()
     printf( "Particles successfully added.\n" );
     this->Initialize();
     this->FullUpdate();
+    /*PrintToFile();
+    PrintDiameterDistribution();
+    PrintSystemInfo(On::Exit);
+    exit(0);*/
 }
 
 void Packing::Make( const char * filename )
@@ -686,6 +690,22 @@ void Packing::Compress()
     }  
                 this->FullUpdate();
     printf( "Completed.\n" ); 
+}
+
+double Packing::GetMinDiameter()
+{
+    double Min = L;
+    for ( int i = 0; i < N; i++ )
+        if ( this->p[i].diameter < Min ) Min = this->p[i].diameter;
+    return Min;
+}
+
+double Packing::GetMaxDiameter()
+{
+    double Max = 0;
+    for ( int i = 0; i < N; i++ )
+        if ( this->p[i].diameter > Max ) Max = this->p[i].diameter;
+    return Max;
 }
 
 /* Return the interaction state between two given particles. */

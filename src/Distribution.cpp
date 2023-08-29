@@ -167,27 +167,11 @@ double Distribution::RandomDiameter( const Info & d )
     return diameter;
 }
 
-double Distribution::Moment( const double * s, int n )
+double Distribution::Moment( const double * val, int n )
 {
     double sum = 0;
     for ( int i = 0; i < N; i++ ) 
-        sum += pow( s[i], n );
+        sum += pow( val[i], n );
     return sum / N;
-}
-
-double Distribution::GetMin( const double * s )
-{
-    double Min = L;
-    for ( int i = 0; i < N; i++ )
-        if ( s[i] < Min ) Min = s[i];
-    return Min;
-}
-
-double Distribution::GetMax( const double * s )
-{
-    double Max = 0;
-    for ( int i = 0; i < N; i++ )
-        if ( s[i] > Max ) Max = s[i];
-    return Max;
 }
 

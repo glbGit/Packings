@@ -25,8 +25,6 @@ namespace Distribution
 
 	Info GetDistributionInfo();
 	double RandomDiameter( const Info & info );
-	double Moment( const double * diameter, int order );
-	double GetMin( const double * diameter );
-	double GetMax( const double * diameter );
+	double Moment( const double * Value, int Order );
 
 }
