@@ -1,10 +1,6 @@
 #include "Box.h"
 
-using namespace Box;
 using namespace Constant;
-
-float Box::Variables::L = 10;
-float Box::Variables::V = L * L * L;
 
 double BoundaryConditions::Periodic::Image( double x )
 {
@@ -127,29 +123,29 @@ Vector BoundaryConditions::Periodic::Relative( Vector a, Vector b ) // returns p
     return Vector{ x, y, z };
 }
 
-Sector::Sector() : 
+Box::Sector::Sector() : 
     x(0),
     y(0),
     z(0)
 {
 }
 
-Sector::~Sector()
+Box::Sector::~Sector()
 {
 }
 
-std::string Sector::toString()
+std::string Box::Sector::toString()
 {
     return "(" + std::to_string(this->x) + "," + std::to_string(this->y) + "," + std::to_string(this->z) + ")";
 }
 
-void Sector::MakeNeighbors()
+void Box::Sector::MakeNeighbors()
 {
     // this->neighbor_list.push_back(Find(x, y, z));                     // 0 0 0
 
-    this->neighbor_list.push_back(Find(x, y, z + 1));         // 0 0 1
-    this->neighbor_list.push_back(Find(x, y + 1, z));         // 0 1 0
-    this->neighbor_list.push_back(Find(x, y + 1, z + 1));     // 0 1 1
+    this->neighbor_list.push_back(FindSector(x, y, z + 1));         // 0 0 1
+    this->neighbor_list.push_back(FindSector(x, y + 1, z));         // 0 1 0
+    this->neighbor_list.push_back(FindSector(x, y + 1, z + 1));     // 0 1 1
     this->neighbor_list.push_back(Find(x, y + 1, z - 1));     // 0 1 -1
     this->neighbor_list.push_back(Find(x + 1, y, z));         // 1 0 0
     this->neighbor_list.push_back(Find(x + 1, y, z + 1));     // 1 0 1
@@ -176,16 +172,35 @@ void Sector::MakeNeighbors()
     // this->neighbor_list.push_back(Find(x - 1, y + 1, z - 1));        // -1 1 -1
 }
 
-int Sector::Find( int x, int y, int z )
+int Box::FindSector( int x, int y, int z )
 {
     while ( x < 0 )
-        x += Sector::_S_;
-    x = x % Sector::_S_;
+        x += SectorsPerSide;
+    x = x % SectorsPerSide;
     while ( y < 0 )
-        y += Sector::_S_;
-    y = y % Sector::_S_;
+        y += SectorsPerSide;
+    y = y % SectorsPerSide;
     while ( z < 0 )
-        z += Sector::_S_;
-    z = z % Sector::_S_;
-    return ( z + y * _S_ + x * _S_ * _S_ );
+        z += SectorsPerSide;
+    z = z % SectorsPerSide;
+    return (z + y * SectorsPerSide + x * SectorsPerSide * SectorsPerSide);
+}
+
+Box::Box( double SigmaMax ) :
+    Size( L ),
+    HalfSize ( 0.5 * L )
+{
+    Volume = pow( L, D );
+    SectorsPerSide = (int ) ( L / SigmaMax );
+    NumOfSectors = Packings::iPow( SectorsPerSide, D );
+    SectorLength = (double ) L / SectorsPerSide;
+    SectorLengthInverse = 1. / SectorLength;
+    NumOfNeighborSectors = ( Packings::iPow( 3, D ) - 1 ) / 2;
+    s = new Sector[ NumOfSectors ];
+
+}
+
+Box::~Box()
+{
+    delete[] s;
 }

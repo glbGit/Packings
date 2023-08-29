@@ -86,6 +86,7 @@ public:
     void                            Compress();
     double                          GetMinDiameter();
     double                          GetMaxDiameter();
+    double                          GetDispersity();
 
     bool                            DoesOverlap( int, int );
     bool                            Drift( int );
@@ -93,10 +94,11 @@ public:
     static Interaction::State       State( double, double );
 
     
-    Particle                        *p;
-    Box::Sector                     *s;
-    Interaction::Local              *c;
-    double                          *g;
+    Box *                           b;
+    Particle *                      p;
+    Box::Sector *                   s;
+    Interaction::Local *            c;
+    double *                        g;
     std::list<ULL>                  overlap_list;
     double                          energy;
     double                          phi;

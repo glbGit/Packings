@@ -54,9 +54,15 @@ void Packing::Initialize()
 }
 
 void Packing::Make()
-{   
-    printf( "Adding %lu particles to the system..    ", N );
+{
+    // Box
     Distribution::Info info = GetDistributionInfo();
+    double s_max_star = pow(Phi_t / phi * pow(info.sigma_max, D), 1. / D);
+    static Box _Box( s_max_star );
+    this->b = &_Box;
+
+    // Particles
+    printf( "Adding %lu particles to the system..    ", N );
 
     for ( int i = 0; i < N; i++ ) 
     {
@@ -85,10 +91,6 @@ void Packing::Make()
     printf( "Particles successfully added.\n" );
     this->Initialize();
     this->FullUpdate();
-    /*PrintToFile();
-    PrintDiameterDistribution();
-    PrintSystemInfo(On::Exit);
-    exit(0);*/
 }
 
 void Packing::Make( const char * filename )
@@ -133,7 +135,7 @@ void Packing::Make( const char * filename )
 void Packing::PrintToFile() 
 {
     FILE * out;
-    out = fopen( "data/output.dat", "w+" );
+    out = fopen( "output.dat", "w+" );
     if ( out != NULL )
     {
         for ( int i = 0; i < N; i++ )
@@ -169,7 +171,7 @@ void Packing::PrintToFile( FILE * f, int frame )
 /* Prints diameter distribution. */
 void Packing::PrintDiameterDistribution()
 { 
-    FILE * file = fopen( "data/diameter_distribution.dat", "w+" );
+    FILE * file = fopen( "diameter_distribution.dat", "w+" );
     if ( file != NULL )
     {
         int count;
@@ -241,7 +243,7 @@ void Packing::PrintSystemInfo( On time )
 			"Growth rate = [%.2e, %.2e]\n"
 			"-----------------------------------------------\n",
 			this->energy, this->Overlaps(), this->steps, (double) this->accepted / this->steps / N, this->phi,
-			999., s_min, s_max, g_min, g_max
+			this->GetDispersity(), s_min, s_max, g_min, g_max
 		);
 		if ( s_max > Sector::s_length ) printf( "WARNING: Maximum diameter exceeding sector length! (May generate overlaps.)\n" );
 		break;
@@ -677,7 +679,7 @@ void Packing::Compress()
                 /* Decompress on exit */
                 for ( int i = 0; i < N; i++ ) this->p[i].diameter = this->p[i].diameter - this->g[i];
                 this->FullUpdate();
-                this->PrintToFile( "output.dat" );
+                this->PrintToFile();
                 this->PrintDiameterDistribution();
                 this->PrintSystemInfo( On::Exit );
                 Time( On::End );
@@ -708,6 +710,20 @@ double Packing::GetMaxDiameter()
     return Max;
 }
 
+double Packing::GetDispersity()
+{
+    double m_1 = 0;
+    double m_2 = 0;
+    for (int i = 0; i < N; i++)
+    {
+        m_1 += this->p[i].diameter;
+        m_2 += this->p[i].diameter * this->p[i].diameter;
+    }
+    m_1 /= N;
+    m_2 /= N;
+    return sqrt(m_2 / (m_1 * m_1) - 1);
+}
+
 /* Return the interaction state between two given particles. */
 Interaction::State Packing::State( double r_sq, double sigma )
 {
@@ -734,7 +750,8 @@ bool Packing::DoesOverlap( int j, int n )
 		if ( i != j ) {
             r_ij = Distance_sq( this->p[i].position, this->p[j].position );
             sigma_ij = ( this->p[i].diameter + this->p[j].diameter ) / 2;
-			if ( Packing::State( r_ij, sigma_ij ) == Interaction::State::Overlap ) return true;
+            sigma_ij *= sigma_ij;
+			if ( r_ij < sigma_ij - epsilon ) return true;
         }
 	}
 	return false;

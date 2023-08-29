@@ -20,9 +20,8 @@ namespace Constant
 
     /* Box */
     static constexpr double      L = 10;                                // Box size 
-    static constexpr double      V = L * L * L;                         // Box volume
     static constexpr double      L_H = L / 2;                           // Box half side
-    static constexpr double      vol_c = Pi / 6. / V; 
+    static constexpr double      vol_c = Pi / 6. / L/L/L; 
 
     /* Packing */
     static constexpr UL          N = 1000;                              // Number of particles
@@ -31,7 +30,7 @@ namespace Constant
     static constexpr double      T = 0.04;                              // Temperature
     static constexpr double      PSwap = 0.2;                           // Swap probability
     static constexpr double      delta_r = 0.05;                        // Max side displacement 
-    static constexpr double      Phi_0 = 0.001;                           // Initial packing fraction
+    static constexpr double      Phi_0 = 0.1;                           // Initial packing fraction
     static constexpr double      Phi_t = 0.7;                           // Target packing fraction
     static const bool            InitialRelaxation = false;             // If true, perform a very brief relaxation in a soft repulsive potential. 
 
