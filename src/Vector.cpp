@@ -2,32 +2,30 @@
 
 using namespace Constant;
 
-Vector::Vector() :
-	m_x(0),
-	m_y(0),
-	m_z(0)
+template <class Ty, int Dim>
+Vector<Ty, Dim>::Vector()
+{
+	for ( size_t i = 0; i < Dim; i++ )
+		x[i] = 0;
+}
+
+template <class Ty, int Dim>
+Vector<Ty, Dim>::Vector( Ty Value )
+{
+	for (size_t i = 0; i < Dim; i++)
+		x[i] = Value;
+}
+
+template <class Ty, int Dim>
+Vector<Ty, Dim>::Vector( Ty Mag, Direction Dir )
 {
 }
 
-Vector::Vector( double v ) : 
-	m_x(v),
-	m_y(v),
-	m_z(v)
+template <class Ty, int Dim>
+Vector<Ty, Dim>::Vector( Vector<Ty, Dim> & Vec )
 {
-}
-
-Vector::Vector( double x, double y, double z ) : 
-	m_x(x),
-	m_y(y),
-	m_z(z)
-{
-}
-
-Vector::Vector( double r, Direction d ) 
-{
-    m_x = r * sin(d.theta) * cos(d.phi); 
-    m_y = r * sin(d.theta) * sin(d.phi);
-	m_z = r * cos(d.theta);
+	for (size_t i = 0; i < Dim; i++)
+		x[i] = Vec.x[i];
 }
 
 
@@ -53,54 +51,54 @@ bool Vector::operator==( Vector v ) { if ( fabs( m_x - v.m_x ) < epsilon && fabs
 
 void Vector::operator+=( Vector & v ) { this->m_x = this->m_x + v.m_x; this->m_y = this->m_y + v.m_y; this->m_z = this->m_z + v.m_z; }
 
-Direction Vector::getDirection() 
+template <class Ty, int Dim>
+std::string Vector<Ty, Dim>::ToString()
 {
-	Direction d{ 0, 0 };
-	double r = this->getMod();
-	if ( r > 0 ) {
-    	d.theta = acos( m_z / r );
-		if ( m_x == 0 ) d.phi = 0;
-		else d.phi = atan2( m_y, m_x );
-	}
-	return d;
+	std::string Str = "(";
+	for ( size_t i = 0; i < Dim; i++ )
+		Str += std::to_string( x[i] ) + " ";
+	Str += ")";
+    return Str;
 }
 
-std::string Vector::toString() { return "(" + std::to_string(m_x) + "," + std::to_string(m_y) + "," + std::to_string(m_z) + ")"; }
+template <class Ty, int Dim>
+inline void Vector<Ty, Dim>::Unit()
+{
+	Ty Mod = Mag();
 
-void Vector::setRandomComponents( double a, double b ) 
+	for (size_t i = 0; i < Dim; i++)
+		x[i] /= Mod;
+}
+
+template <class Ty, int Dim>
+inline void Vector<Ty, Dim>::SetRandomComponents( Ty a, Ty b ) 
 { 
-	m_x = (double) rand() / RAND_MAX * ( b - a ) + a;
-	m_y = (double) rand() / RAND_MAX * ( b - a ) + a; 
-	m_z = (double) rand() / RAND_MAX * ( b - a ) + a; 
+	for ( size_t i = 0; i < Dim; i++ )
+		x[i] = u_rand_in( a, b );
 }
 
-void Vector::rotate( Direction d )
+template <class Ty, int Dim>
+inline double Vector<Ty, Dim>::Mag()
+{	
+    return sqrt( MagSq() );
+}
+
+template <class Ty, int Dim>
+inline double Vector<Ty, Dim>::MagSq()
 {
-	// double theta, mod;
-	// theta = this->getDirection().theta + d.theta;
-	// if ( theta > M_PI ) theta -= 2 * M_PI;
-	// else if ( theta < -M_PI ) theta += 2 * M_PI;
-	// mod = this->getMod();
-	// m_x = mod * cos( theta );
-	// m_y = mod * sin( theta );
+	Ty m = 0;
+	for ( size_t i = 0; i < count; i++ )
+		m += x[i] * x[i];
+	return m;
 }
 
-Vector Vector::Unit( Vector v ) { 
-	double norm = v.getMod();
-	return Vector{ v.m_x / norm, v.m_y / norm, v.m_z / norm }; 
-}
-
-Vector Vector::RandomVector( double a, double b )
+template <class Ty, int Dim>
+double Vector<Ty, Dim>::Angle( Vector & v, Vector & w )
 {
-	return Vector{ (double) rand() / RAND_MAX * ( b - a ) + a, (double) rand() / RAND_MAX * ( b - a ) + a, (double) rand() / RAND_MAX * ( b - a ) + a  };
-}
-
-double Vector::Angle( Vector a, Vector b ) 
-{ 
-	double scalar = a * b;
-	double _a = a.getMod(), _b = b.getMod();
-	if ( _a == 0 || _b == 0 ) return 0;
-	else 					return acos( scalar / _a / _b );
+	Ty scalar = v * w;
+	Ty _v = v.Mag(), _w = w.Mag();
+	if ( _v == 0 || _w == 0 ) return 0;
+	return acos( scalar / _v / _w );
 }
 
 

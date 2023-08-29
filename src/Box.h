@@ -19,16 +19,10 @@ public:
     int SectorsPerSide;
     int NumOfNeighborSectors;
     
-    class Sector
+    struct Sector
     {
-    public:
         Sector();
-        ~Sector();
-        std::string toString();
-        void MakeNeighbors();
-        int x;
-        int y;
-        int z;
+        int x[ Constant::D ];
         std::vector<int> neighbor_list;
         std::list<int> member_list;
     };

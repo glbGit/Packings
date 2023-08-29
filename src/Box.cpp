@@ -123,67 +123,21 @@ Vector BoundaryConditions::Periodic::Relative( Vector a, Vector b ) // returns p
     return Vector{ x, y, z };
 }
 
-Box::Sector::Sector() : 
-    x(0),
-    y(0),
-    z(0)
-{
-}
-
-Box::Sector::~Sector()
-{
-}
-
-std::string Box::Sector::toString()
-{
-    return "(" + std::to_string(this->x) + "," + std::to_string(this->y) + "," + std::to_string(this->z) + ")";
-}
-
 void Box::Sector::MakeNeighbors()
 {
-    // this->neighbor_list.push_back(Find(x, y, z));                     // 0 0 0
-
-    this->neighbor_list.push_back(FindSector(x, y, z + 1));         // 0 0 1
-    this->neighbor_list.push_back(FindSector(x, y + 1, z));         // 0 1 0
-    this->neighbor_list.push_back(FindSector(x, y + 1, z + 1));     // 0 1 1
-    this->neighbor_list.push_back(Find(x, y + 1, z - 1));     // 0 1 -1
-    this->neighbor_list.push_back(Find(x + 1, y, z));         // 1 0 0
-    this->neighbor_list.push_back(Find(x + 1, y, z + 1));     // 1 0 1
-    this->neighbor_list.push_back(Find(x + 1, y, z - 1));     // 1 0 -1
-    this->neighbor_list.push_back(Find(x + 1, y + 1, z));     // 1 1 0
-    this->neighbor_list.push_back(Find(x + 1, y - 1, z));     // 1 -1 0
-    this->neighbor_list.push_back(Find(x + 1, y + 1, z + 1)); // 1 1 1
-    this->neighbor_list.push_back(Find(x + 1, y + 1, z - 1)); // 1 1 -1
-    this->neighbor_list.push_back(Find(x + 1, y - 1, z - 1)); // 1 -1 -1
-    this->neighbor_list.push_back(Find(x + 1, y - 1, z + 1)); // 1 -1 1
-    //---------------------------OPPOSITE-----------------------------//
-    // this->neighbor_list.push_back(Find(x, y, z - 1));                // 0 0 -1
-    // this->neighbor_list.push_back(Find(x, y - 1, z));                // 0 -1 0
-    // this->neighbor_list.push_back(Find(x, y - 1, z - 1));            // 0 -1 -1
-    // this->neighbor_list.push_back(Find(x, y - 1, z + 1));            // 0 -1 1
-    // this->neighbor_list.push_back(Find(x - 1, y, z));                // -1 0 0
-    // this->neighbor_list.push_back(Find(x - 1, y, z - 1));            // -1 0 -1
-    // this->neighbor_list.push_back(Find(x - 1, y, z + 1));            // -1 0 1
-    // this->neighbor_list.push_back(Find(x - 1, y - 1, z));            // -1 -1 0
-    // this->neighbor_list.push_back(Find(x - 1, y + 1, z));            // -1 1 0
-    // this->neighbor_list.push_back(Find(x - 1, y - 1, z - 1));        // -1 -1 -1
-    // this->neighbor_list.push_back(Find(x - 1, y - 1, z + 1));        // -1 -1 1
-    // this->neighbor_list.push_back(Find(x - 1, y + 1, z + 1));        // -1 1 1
-    // this->neighbor_list.push_back(Find(x - 1, y + 1, z - 1));        // -1 1 -1
 }
 
 int Box::FindSector( int x, int y, int z )
 {
-    while ( x < 0 )
-        x += SectorsPerSide;
-    x = x % SectorsPerSide;
-    while ( y < 0 )
-        y += SectorsPerSide;
-    y = y % SectorsPerSide;
-    while ( z < 0 )
-        z += SectorsPerSide;
-    z = z % SectorsPerSide;
-    return (z + y * SectorsPerSide + x * SectorsPerSide * SectorsPerSide);
+    int n = 0;
+    for ( int k = 0; k < D; k++ )
+    {
+        int c = 1;
+        for ( int l = k; l < D - 1; l++ )
+            c = c * SectorsPerSide;
+        n = n + s.x[k] * c;
+    }
+    return n;
 }
 
 Box::Box( double SigmaMax ) :
@@ -203,4 +157,8 @@ Box::Box( double SigmaMax ) :
 Box::~Box()
 {
     delete[] s;
+}
+
+Box::Sector::Sector()
+{
 }

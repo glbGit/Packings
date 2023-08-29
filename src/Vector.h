@@ -10,21 +10,21 @@ struct Direction /* Angles are defined according to polar coordinates: theta[0,P
     double phi;
 };
 
+template <int Dim>
 struct Point
 {
-    double x;
-    double y; 
-    double z;
+    double x[Dim];
 };
 
+template <class Ty, int Dim>
 class Vector
 {
 public:
     Vector();
-    Vector( double );
-    Vector( double, double, double );
-    Vector( double, Direction );
-    
+    Vector( Ty Value );
+    Vector( Ty Mag, Direction Dir );
+    Vector( Vector<Ty, Dim> & Vec );
+
     Vector operator+( Vector );
     Vector operator-( Vector );
     Vector operator*( double );
@@ -37,25 +37,16 @@ public:
     friend Vector operator*( double, Vector );
     friend Vector operator-( Vector );
 
-    std::string toString();
-    void SetX( double x ) { m_x = x; }
-    void SetY( double y ) { m_y = y; }
-    void SetZ( double z ) { m_z = z; }
-    void Set( double x, double y, double z ) { m_x = x; m_y = y; m_z = z; }
-    void setRandomComponents( double, double );
-    void rotate( Direction );
+    std::string ToString();
+    void Unit();
+    void SetRandomComponents( Ty Min, Ty Max );
 
-    double      getMod() { return sqrt( m_x * m_x + m_y * m_y + m_z * m_z ); }
-    double      SqrtMod() { return m_x * m_x + m_y * m_y + m_z * m_z; }
-    Direction   getDirection();
+    double      Mag();
+    double      MagSq();
     
-    static Vector   Unit( Vector );
-    static Vector   RandomVector( double, double );
-    static double   Angle( Vector, Vector );
+    static double   Angle( Vector &, Vector & );
     
-    double              m_x;
-    double              m_y;
-    double              m_z;
+    Ty              x[ Dim ];
 };
 
 
