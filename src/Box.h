@@ -3,6 +3,8 @@
 #include "pch.h"
 #include "Vector.h"
 
+using namespace Constant;
+
 class Box
 {
 
@@ -22,7 +24,7 @@ public:
     struct Sector
     {
         Sector();
-        int x[ Constant::D ];
+        int x[D];
         std::vector<int> neighbor_list;
         std::list<int> member_list;
     };
@@ -39,10 +41,10 @@ namespace BoundaryConditions
     {
         double Image(double);
         double Distance_sq(double, double);
-        double Distance_sq(Point &, Point &);
-        double Distance_sq(Vector &, Vector &);
-        double Distance(Vector &, Vector &);
-        Vector Relative(Vector, Vector);
+        double Distance_sq(Point<D> &, Point<D> &);
+        double Distance_sq(Vector<double, D> &, Vector<double, D> &);
+        double Distance(Vector<double, D> &, Vector<double, D> &);
+        Vector<double, D> Relative( Vector<double, D>, Vector<double, D> );
     }
 
     namespace Wall

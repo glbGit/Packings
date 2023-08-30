@@ -4,8 +4,7 @@
 #include "Packing.h"
 #include "Vector.h"
 
-using namespace Box;
-using namespace Box::BoundaryConditions::Periodic;
+using namespace BoundaryConditions::Periodic;
 using namespace System;
 using namespace System::Variables;
 using namespace System::Interaction;
@@ -30,7 +29,7 @@ Packing::Packing() :
     p = new Particle[N];
     c = new Local[ (N * (N - 1) ) / 2 ];
     for ( int i = 0; i < N; i++ ) {
-        p[i] = Particle{ NO_INDEX, Vector{}, Vector{}, 0 };
+        p[i] = Particle{ };
         g[i] = 2;
     }
 }

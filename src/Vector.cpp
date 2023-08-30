@@ -22,34 +22,93 @@ Vector<Ty, Dim>::Vector( Ty Mag, Direction Dir )
 }
 
 template <class Ty, int Dim>
-Vector<Ty, Dim>::Vector( Vector<Ty, Dim> & Vec )
+Vector<Ty, Dim>::Vector( const Vector<Ty, Dim> & Vec )
 {
 	for (size_t i = 0; i < Dim; i++)
 		x[i] = Vec.x[i];
 }
 
+template <class Ty, int Dim>
+inline void Vector<Ty, Dim>::operator=( double c ) 
+{
+	for ( int i = 0; i < Dim; i++ )
+		x[i] = c;
+}
 
-void Vector::operator=( double c ) { m_x = c; m_y = c; m_z = c; }
+template <class Ty, int Dim>
+inline Vector<Ty, Dim> Vector<Ty, Dim>::operator+( Vector v ) 
+{
+	Vector w;
+	for ( int i = 0; i < Dim; i++ )
+		w.x[i] = x[i] + v.x[i];
+	return w;
+}
 
-Vector Vector::operator+( Vector v ) { return Vector{ m_x + v.m_x, m_y + v.m_y, m_z + v.m_z }; }
+template <class Ty, int Dim>
+inline Vector<Ty, Dim> Vector<Ty, Dim>::operator-( Vector v ) 
+{
+	Vector w;
+	for ( int i = 0; i < Dim; i++ )
+		w.x[i] = x[i] - v.x[i];
+	return w;
+}
 
-Vector Vector::operator-( Vector v ) { return Vector{ m_x - v.m_x, m_y - v.m_y, m_z - v.m_z }; }
+template <class Ty, int Dim>
+inline Vector<Ty, Dim> Vector<Ty, Dim>::operator*( double k )
+{
+	Vector w;
+	for ( int i = 0; i < Dim; i++ )
+		w.x[i] = x[i] * k;
+	return w;
+}
 
-Vector Vector::operator*( double k ) { return Vector{ m_x * k, m_y * k, m_z * k }; }
+template <class Ty, int Dim>
+inline Vector<Ty, Dim> Vector<Ty, Dim>::operator/( double k )
+{
+	if ( k == 0 ) return Vector(0);
+	Vector w;
+	for ( int i = 0; i < Dim; i++ )
+		w.x[i] = x[i] / k;
+	return w;
+}
 
-Vector Vector::operator/( double k ) { return Vector{ m_x / k, m_y / k, m_z / k }; }
+template <class Ty, int Dim>
+inline double Vector<Ty, Dim>::operator*( Vector v )
+{
+	double Scalar = 0;
+	for ( int i = 0; i < Dim; i++ )
+		Scalar += x[i] * v.x[i];
+	return Scalar;
+}
 
-Vector operator*( double k, Vector v ) { return v * k; }
+template <class Ty, int Dim>
+inline Vector<Ty, Dim> Vector<Ty, Dim>::operator^( Vector v )
+{
+	if ( Dim == 3 )
+	{
+		Vector w;
+		w.x[0] = x[1] * v.x[2] - x[2] * v.x[1];
+		w.x[1] = x[2] * v.x[0] - x[0] * v.x[2];
+		w.x[2] = x[0] * v.x[1] - x[1] * v.x[0];
+		return w;
+	}
+	else return Vector(0);
+}
 
-Vector operator-( Vector v ) { return Vector { -v.m_x, -v.m_y, -v.m_z }; }
+template <class Ty, int Dim>
+inline bool Vector<Ty, Dim>::operator==( Vector v ) 
+{
+	for ( int i = 0; i < Dim; i++ )
+		if ( fabs( x[i] - v.x[i] ) > epsilon ) return false;
+	return true;
+}
 
-double Vector::operator*( Vector v ) { return m_x * v.m_x + m_y * v.m_y + m_z * v.m_z; }
-
-Vector Vector::operator^( Vector v ) { return Vector{ ( m_y * v.m_z - m_z * v.m_y ), ( m_z * v.m_x - m_x * v.m_z ), ( m_x * v.m_y - m_y * v.m_x ) }; }
-
-bool Vector::operator==( Vector v ) { if ( fabs( m_x - v.m_x ) < epsilon && fabs( m_y - v.m_y ) < epsilon && fabs( m_z - v.m_z ) < epsilon) return true; else return false; }
-
-void Vector::operator+=( Vector & v ) { this->m_x = this->m_x + v.m_x; this->m_y = this->m_y + v.m_y; this->m_z = this->m_z + v.m_z; }
+template <class Ty, int Dim>
+inline void Vector<Ty, Dim>::operator+=( Vector & v ) 
+{
+	for ( int i = 0; i < Dim; i++ )
+		x[i] = x[i] + v.x[i];
+}
 
 template <class Ty, int Dim>
 std::string Vector<Ty, Dim>::ToString()

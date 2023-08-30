@@ -70,8 +70,8 @@ public:
     int                             Overlaps();
     double                          Energy();
     double                          VolumeFraction();
-    double                          NewState_( int, Vector &, std::vector<System::Interaction::Local> &, bool & );
-    void                            NewState( int, Vector &, std::vector<System::Interaction::Local> &, bool & );
+    double                          NewState_( int, Vector<double, D> &, std::vector<System::Interaction::Local> &, bool & );
+    void                            NewState( int, Vector<double, D> &, std::vector<System::Interaction::Local> &, bool & );
     void                            NewState( int, double, std::vector<System::Interaction::Local> &, bool & );
     void                            FullUpdate();
     void                            Update( System::State );

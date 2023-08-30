@@ -37,7 +37,7 @@ double BoundaryConditions::Periodic::Distance_sq( double x, double y )
     return d * d;
 }
 
-double BoundaryConditions::Periodic::Distance_sq( Point & a, Point & b )
+double BoundaryConditions::Periodic::Distance_sq( Point<D> & a, Point<D> & b )
 {
     double dx = b.x - a.x;
     double dy = b.y - a.y;
@@ -57,7 +57,7 @@ double BoundaryConditions::Periodic::Distance_sq( Point & a, Point & b )
     return dx * dx + dy * dy + dz * dz;
 }
 
-double BoundaryConditions::Periodic::Distance_sq( Vector & a, Vector & b )
+double BoundaryConditions::Periodic::Distance_sq( Vector<double, D> & a, Vector<double, D> & b )
 {
     double dx = a.m_x - b.m_x;
     double dy = a.m_y - b.m_y;
@@ -77,7 +77,7 @@ double BoundaryConditions::Periodic::Distance_sq( Vector & a, Vector & b )
     return dx * dx + dy * dy + dz * dz;
 }
 
-double BoundaryConditions::Periodic::Distance( Vector & a, Vector & b )
+double BoundaryConditions::Periodic::Distance( Vector<double, D> & a, Vector<double, D> & b )
 {
     double dx = a.m_x - b.m_x;
     double dy = a.m_y - b.m_y;
@@ -97,7 +97,7 @@ double BoundaryConditions::Periodic::Distance( Vector & a, Vector & b )
     return sqrt( dx * dx + dy * dy + dz * dz );
 }
 
-Vector BoundaryConditions::Periodic::Relative( Vector a, Vector b ) // returns periodic Vector (a-b)
+Vector<double, D> BoundaryConditions::Periodic::Relative( Vector<double, D> a, Vector<double, D> b ) // returns periodic Vector (a-b)
 {
     double x = a.m_x - b.m_x;
     double y = a.m_y - b.m_y;

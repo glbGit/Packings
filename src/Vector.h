@@ -23,19 +23,17 @@ public:
     Vector();
     Vector( Ty Value );
     Vector( Ty Mag, Direction Dir );
-    Vector( Vector<Ty, Dim> & Vec );
+    Vector( const Vector<Ty, Dim> & Vec );
 
     Vector operator+( Vector );
     Vector operator-( Vector );
-    Vector operator*( double );
+    Vector operator*( double Scalar );
     Vector operator^( Vector );
-    Vector operator/( double );
-    void   operator=( double );
+    Vector operator/( double Scalar );
+    void   operator=( double Scalar );
     bool   operator==( Vector );
     void   operator+=( Vector & );
     double operator*( Vector );
-    friend Vector operator*( double, Vector );
-    friend Vector operator-( Vector );
 
     std::string ToString();
     void Unit();
