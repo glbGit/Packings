@@ -17,7 +17,7 @@ Distribution::Info Distribution::GetDistributionInfo()
     }
 
     if ( ratio < 0 )  Exit( INVALID_PARAMETER, { "Diameters ratio must be positive." } );
-    if ( ratio > 1 ) ratio = 1 / ratio;
+    if ( ratio > 1 ) ratio = 1. / ratio;
 
     if ( fabs( ratio - 1 ) < epsilon )
     {

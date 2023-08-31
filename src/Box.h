@@ -27,9 +27,11 @@ public:
         int x[D];
         std::vector<int> neighbor_list;
         std::list<int> member_list;
+        void MakeNeighbors();
     };
 
-    int             FindSector( int x, int y, int z );
+    int             Decrease( int Layer, Vector<int, D> & SectorCoord );
+    int             FindSector( Vector<int, D> & SectorCoord );
 
     Sector *        s;
 
@@ -39,11 +41,10 @@ namespace BoundaryConditions
 {
     namespace Periodic
     {
-        double Image(double);
-        double Distance_sq(double, double);
-        double Distance_sq(Point<D> &, Point<D> &);
-        double Distance_sq(Vector<double, D> &, Vector<double, D> &);
-        double Distance(Vector<double, D> &, Vector<double, D> &);
+        double Image( double );
+        double Distance_sq( double, double );
+        double Distance_sq( Vector<double, D> &, Vector<double, D> & );
+        double Distance( Vector<double, D> &, Vector<double, D> & );
         Vector<double, D> Relative( Vector<double, D>, Vector<double, D> );
     }
 
