@@ -96,12 +96,11 @@ public:
     
     Box *                           b;
     Particle *                      p;
-    Box::Sector *                   s;
     Interaction::Local *            c;
     double *                        g;
     std::list<ULL>                  overlap_list;
     double                          energy;
     double                          phi;
-    int                             steps = 0;
-    int                             accepted = 0;
+    int                             steps;
+    int                             accepted;
 };

@@ -16,15 +16,10 @@ using namespace Packings;
 
 Packing::Packing() :
     energy(0),
-    phi(0)
+    phi(0),
+    steps(0),
+    accepted(0)
 {
-    s = new Sector[ Sector::N_S ];
-    for ( int i = 0; i < Sector::N_S; i++ ) {
-        s[i].x = i / ( Sector::_S_ * Sector::_S_ );
-        s[i].y = ( i % ( Sector::_S_ * Sector::_S_ ) ) / Sector::_S_;
-        s[i].z = i % Sector::_S_; 
-        s[i].MakeNeighbors();
-    }
     g = new double[N];
     p = new Particle[N];
     c = new Local[ (N * (N - 1) ) / 2 ];
@@ -36,10 +31,9 @@ Packing::Packing() :
 
 Packing::~Packing() 
 {
-    delete[] g;
     delete[] p;
     delete[] c;
-    delete[] s;
+    delete[] g;
 }
 
 void Packing::Initialize()
@@ -54,11 +48,8 @@ void Packing::Initialize()
 
 void Packing::Make()
 {
-    // Box
+    // Distribution
     Distribution::Info info = GetDistributionInfo();
-    double s_max_star = pow(Phi_t / phi * pow(info.sigma_max, D), 1. / D);
-    static Box _Box( s_max_star );
-    this->b = &_Box;
 
     // Particles
     printf( "Adding %lu particles to the system..    ", N );
@@ -67,34 +58,50 @@ void Packing::Make()
     {
         if ( this->p[i].id == NO_INDEX ) 
         {
+            this->p[i].id = i;
             this->p[i].diameter = RandomDiameter( info );
+            this->g[i] = a0 * this->p[i].diameter;
             int count = 0;
 		    do 
             {
                 count++; 
                 if ( count > N ) Exit( RELOCATION_OVERFLOW, { "Failed to place particle ", to_cstr(i), "." } );
-			    this->p[i].position.setRandomComponents( 0, L );
+			    this->p[i].position.SetRandomComponents( 0, L );
 		    } while ( this->DoesOverlap( i, i ) );
 
-            int x = static_cast<int>( this->p[i].position.m_x / Sector::s_length );
-            int y = static_cast<int>( this->p[i].position.m_y / Sector::s_length );
-            int z = static_cast<int>( this->p[i].position.m_z / Sector::s_length );
-            int l = Sector::Find( x, y, z );
-            this->s[l].member_list.push_back(i);
-            this->p[i].sector = l;
-            this->p[i].id = i;
-            this->g[i] = a0 * this->p[i].diameter;
+		    double sigma = 1;
+		    for ( int k = 0; k < D; k++ )
+			    sigma = sigma * p[i].diameter;
+		    phi = phi + sigma;
         }
 	}
+	phi = phi * vol_c;
 
     printf( "Particles successfully added.\n" );
+
+    // Box
+    double s_max_star = pow(Phi_t / phi * pow(info.sigma_max, D), 1. / D);
+    static Box _Box( s_max_star );
+    b = &_Box;
+    b->MakeNeighbors();
+
+	for ( int i = 0; i < N; i++ )
+	{
+		Vector<int, D> _s;
+		for ( int k = 0; k < D; k++ )
+			_s.x[k] = static_cast<int>( p[i].position.x[k] * b->SectorLengthInverse );
+
+		int l = b->FindSector( _s );
+		b->s[l].member_list.push_back(i);
+        p[i].sector = l;
+	}
+
     this->Initialize();
     this->FullUpdate();
 }
 
 void Packing::Make( const char * filename )
 {   
-    int entries = 0;
     char line[256];
 	char _filename[256];
 	sprintf( _filename, "data/%s", filename );
@@ -105,29 +112,61 @@ void Packing::Make( const char * filename )
         printf( "Copying system configuration from file \"%s\"..    ", filename );
         for ( int i = 0; i < N; i++ ) 
         {
+            int n, entries = 0;
             int result = fscanf( stream, "%[^\n]", line );
             if ( result != 0 )
             {
                 if ( line[0] == '\0' ) Exit( INSUFFICIENT_DATA, { "Too few entries (", to_cstr(i), "/", to_cstr(N), ")." } );
-	            entries = sscanf( line, "%lg %lg %lg %lg", &this->p[i].position.m_x, &this->p[i].position.m_y, &this->p[i].position.m_z, &this->p[i].diameter );
-                this->p[i].diameter = this->p[i].diameter + this->p[i].diameter;
+		        char * line_ptr = line;
+		        for ( int k = 0; k < D; k++ )
+		        {
+	    	        entries += sscanf( line_ptr, "%lg %n", &p[i].position.x[k], &n );
+			        line_ptr += n;
+		        }
+	            entries += sscanf( line_ptr, "%lg %n", &p[i].diameter, &n );
+		        line_ptr += n;
+                p[i].diameter = p[i].diameter + p[i].diameter;
+		        g[i] = a0 * p[i].diameter;
 	            fgetc( stream );
                 line[0] = '\0';
-                if ( entries != 4 ) Exit( WRONG_INPUT_FORMAT, { "Entry format must be [x] [y] [z] [rad]." } );
+                if ( entries != D + 1 ) Exit( WRONG_INPUT_FORMAT, { "Entry format must be [x_1] [x_2] ... [x_D] [rad]." } );
 
-                int x = static_cast<int>( this->p[i].position.m_x / Sector::s_length );
-                int y = static_cast<int>( this->p[i].position.m_y / Sector::s_length );
-                int z = static_cast<int>( this->p[i].position.m_z / Sector::s_length );
-                int l = Sector::Find( x, y, z );
-                this->s[l].member_list.push_back(i);
-                this->p[i].sector = l;
                 this->p[i].id = i;
                 this->g[i] = a0 * this->p[i].diameter;
             } else Exit( EMPTY_LINE, { "Empty line (", to_cstr( i + 1 ), ")." } );
+            
+		    double sigma = 1;
+		    for ( int k = 0; k < D; k++ )
+			    sigma = sigma * p[i].diameter;
+		    phi = phi + sigma;
+
 	    }
+	    phi = phi * vol_c;
         fclose( stream );
     } else Exit( DIR_NOT_FOUND, { "File \"", filename, "\" not found." } );
     printf( "Particles successfully added.\n" );
+    
+    // Distribution
+    Distribution::Info info = GetDistributionInfo();
+
+    // Box
+    double s_max_star = pow(Phi_t / phi * pow(info.sigma_max, D), 1. / D);
+    static Box _Box( s_max_star );
+    b = &_Box;
+    b->MakeNeighbors();
+
+	for ( int i = 0; i < N; i++ )
+	{
+		Vector<int, D> _s;
+		for ( int k = 0; k < D; k++ )
+			_s.x[k] = static_cast<int>( p[i].position.x[k] * b->SectorLengthInverse );
+
+		int l = b->FindSector( _s );
+		b->s[l].member_list.push_back(i);
+        p[i].sector = l;
+	}
+
+    this->Initialize();
     this->FullUpdate();
 }
 
@@ -138,7 +177,11 @@ void Packing::PrintToFile()
     if ( out != NULL )
     {
         for ( int i = 0; i < N; i++ )
-            fprintf( out, "%.16f %.16f %.16f %.16f\n", p[i].position.m_x, p[i].position.m_y, p[i].position.m_z, 0.5 * p[i].diameter );
+        {
+            for ( int k = 0; k < D; k++ )
+                fprintf( out, "%.16f ", p[i].position.x[i] );
+            fprintf( out, "%.16f\n", 0.5 * p[i].diameter );
+        }
         fclose( out );
     } else Exit( DIR_NOT_FOUND, { "Destination folder \"/data\" not found." } );
 }
@@ -152,17 +195,26 @@ void Packing::PrintToFile( const char * filename )
     if ( out != NULL ) 
     {
         for ( int i = 0; i < N; i++ )
-            fprintf( out, "%.16f %.16f %.16f %.16f\n", p[i].position.m_x, p[i].position.m_y, p[i].position.m_z, 0.5 * p[i].diameter );
+        {
+            for ( int k = 0; k < D; k++ )
+                fprintf( out, "%.16f ", p[i].position.x[i] );
+            fprintf( out, "%.16f\n", 0.5 * p[i].diameter );
+        }
         fclose( out );
     } else Exit( DIR_NOT_FOUND, { "Destination folder \"/data\" not found." } ); 
 }
 
-void Packing::PrintToFile( FILE * f, int frame ) 
+void Packing::PrintToFile( FILE * out, int frame ) 
 {
-    if ( f != NULL )
+    if ( out != NULL )
     {
         for ( int i = 0; i < N; i++ )
-            fprintf( f, "%.16f %.16f %.16f %.16f %d\n", p[i].position.m_x, p[i].position.m_y, p[i].position.m_z, 0.5 * p[i].diameter, frame );
+        {
+            for ( int k = 0; k < D; k++ )
+                fprintf( out, "%.16f ", p[i].position.x[i] );
+            fprintf( out, "%.16f ", 0.5 * p[i].diameter );
+            fprintf( out, "%d\n", frame );
+        }
     }
     else Exit( NULL_PTR, { "Null pointer." } );
 }
@@ -223,7 +275,7 @@ void Packing::PrintSystemInfo( On time )
 			"Phi_t = %g\n"
 			"dr = %g\n"
 			"-----------------------------------------------\n",
-			D, N, L, PSwap, DType, Ratio, 999,  
+			D, N, L, PSwap, DType, Ratio, b->SectorsPerSide,  
 			a0, this->phi, Phi_t, delta_r
 		);
 		break;
@@ -244,7 +296,7 @@ void Packing::PrintSystemInfo( On time )
 			this->energy, this->Overlaps(), this->steps, (double) this->accepted / this->steps / N, this->phi,
 			this->GetDispersity(), s_min, s_max, g_min, g_max
 		);
-		if ( s_max > Sector::s_length ) printf( "WARNING: Maximum diameter exceeding sector length! (May generate overlaps.)\n" );
+		if ( s_max > b->SectorLength ) printf( "WARNING: Maximum diameter exceeding sector length! (May generate overlaps.)\n" );
 		break;
 
 	default:
@@ -255,7 +307,14 @@ void Packing::PrintSystemInfo( On time )
 inline double Packing::VolumeFraction()
 {
 	double phi = 0;
-	for ( int i = 0; i < N; i++ ) phi += vol_c * p[i].diameter * p[i].diameter * p[i].diameter;
+    for ( int i = 0; i < N; i++ )
+    {
+	    double sigma = 1;
+        for ( int k = 0; k < D; k++ )
+		    sigma = sigma * p[i].diameter;
+	    phi = phi + sigma;
+    }
+    phi = phi * vol_c;
 	return phi;
 }
 
@@ -270,7 +329,7 @@ double Packing::Energy()
 }
 
 /* Swap two diameters. */ 
-void Packing::Swap( int i, int j )
+inline void Packing::Swap( int i, int j )
 {
     double temp;
     temp = this->p[i].diameter;
@@ -291,11 +350,11 @@ void Packing::FullUpdate()
         this->p[i].first_neighbors.clear();                        
     }
         
-    for ( int k = 0; k < Sector::N_S; k++ ) 
+    for ( int k = 0; k < b->NumOfSectors; k++ ) 
     {       /* This sector */
-        for ( auto i : this->s[k].member_list )
+        for ( auto i : b->s[k].member_list )
         {
-            for ( auto j : this->s[k].member_list )
+            for ( auto j : b->s[k].member_list )
             {
                 if ( j > i )
                 { 
@@ -315,7 +374,7 @@ void Packing::FullUpdate()
                         this->p[j].first_neighbors.push_back(i);
                         break;
                     case Interaction::State::FirstNeighbor:
-                        this->c[ Hash<N>( i, j ) ].energy = exp( -b * ( sqrt(r_ij) - sigma_ij ) );
+                        this->c[ Hash<N>( i, j ) ].energy = exp( -Constant::b * ( sqrt(r_ij) - sigma_ij ) );
                         this->p[i].first_neighbors.push_back(j);
                         this->p[j].first_neighbors.push_back(i);
                         break;
@@ -327,9 +386,9 @@ void Packing::FullUpdate()
                 }
             }
             /* Neighbor sectors */
-            for ( auto _k : this->s[k].neighbor_list )
+            for ( auto _k : b->s[k].neighbor_list )
             {
-                for ( auto j : this->s[_k].member_list )
+                for ( auto j : b->s[_k].member_list )
                 {
                     double r_ij = Distance_sq( this->p[i].position, this->p[j].position );
                     double sigma_ij = 0.5 * ( this->p[i].diameter + this->p[j].diameter ); 
@@ -347,7 +406,7 @@ void Packing::FullUpdate()
                         this->p[j].first_neighbors.push_back(i);
                         break; 
                     case Interaction::State::FirstNeighbor:
-                        this->c[ Hash<N>( i, j ) ].energy = exp( -b * ( sqrt(r_ij) - sigma_ij ) ); 
+                        this->c[ Hash<N>( i, j ) ].energy = exp( -Constant::b * ( sqrt(r_ij) - sigma_ij ) ); 
                         this->p[i].first_neighbors.push_back(j);
                         this->p[j].first_neighbors.push_back(i);
                         break;
@@ -391,7 +450,7 @@ void Packing::Update( System::State state )
                         this->c[id].energy = 1;
                         break;
                     case Interaction::State::FirstNeighbor:
-                        this->c[id].energy = exp( -b * ( sqrt(r_ij) - sigma_ij ) );
+                        this->c[id].energy = exp( -Constant::b * ( sqrt(r_ij) - sigma_ij ) );
                         break;
 
                     default:
@@ -406,11 +465,11 @@ void Packing::Update( System::State state )
     {
         for ( int i = 0; i < N; i++ )  this->p[i].first_neighbors.clear();
         
-        for ( int k = 0; k < Sector::N_S; k++ ) 
+        for ( int k = 0; k < b->NumOfSectors; k++ ) 
         {       /* This sector */
-            for ( auto i : this->s[k].member_list )
+            for ( auto i : b->s[k].member_list )
             {
-                for ( auto j : this->s[k].member_list )
+                for ( auto j : b->s[k].member_list )
                 {
                     if ( j > i )
                     {
@@ -428,9 +487,9 @@ void Packing::Update( System::State state )
                     }
                 }
                 /* Neighbor sectors */
-                for ( auto _k : this->s[k].neighbor_list )
+                for ( auto _k : b->s[k].neighbor_list )
                 {
-                    for ( auto j : this->s[_k].member_list ) 
+                    for ( auto j : b->s[_k].member_list ) 
                     {
                         double r_ij = Distance_sq( this->p[i].position, this->p[j].position );
                         double sigma_ij = 0.5 * ( this->p[i].diameter + this->p[j].diameter ); 
@@ -456,7 +515,7 @@ void Packing::Update( System::State state )
     }
 }
 
-double Packing::NewState_( int i, Vector & NewPosition, std::vector<System::Interaction::Local> & c_p, bool & flag )
+double Packing::NewState_( int i, Vector<double, D> & NewPosition, std::vector<System::Interaction::Local> & c_p, bool & flag )
 {
     double de = 0;
     flag = true;
@@ -474,7 +533,7 @@ double Packing::NewState_( int i, Vector & NewPosition, std::vector<System::Inte
                 de = de + c_p.back().energy - this->c[id].energy;
                 break;
             case Interaction::State::FirstNeighbor:
-                c_p.push_back( { id, exp( -b * ( sqrt(r_ij) - sigma_ij ) ) } );
+                c_p.push_back( { id, exp( -Constant::b * ( sqrt(r_ij) - sigma_ij ) ) } );
                 de = de + c_p.back().energy - this->c[id].energy;
                 break;
             case Interaction::State::Free:
@@ -486,7 +545,7 @@ double Packing::NewState_( int i, Vector & NewPosition, std::vector<System::Inte
     return de;
 }
 
-void Packing::NewState( int i, Vector & NewPosition, std::vector<System::Interaction::Local> & c_p, bool & flag )
+void Packing::NewState( int i, Vector<double, D> & NewPosition, std::vector<System::Interaction::Local> & c_p, bool & flag )
 {
     flag = true;
     for ( auto j : this->p[i].first_neighbors)  
@@ -536,9 +595,9 @@ int Packing::Step()
     {
         case Potential::Hard:
         {      
-            double _x, _y, _z, rnd;
+            double rnd;
             bool no_overlap;
-            Vector _r;    
+            Vector<double, D> _r;    
             std::vector<Local> c_p;                                                                     
             for ( int i = 0; i < N; i++ ) 
             {
@@ -546,15 +605,13 @@ int Packing::Step()
                 rnd = u_rand;
                 if ( rnd < 1 - PSwap )                    /* Standard Monte Carlo move */
                 { 
-                    _x = Image( this->p[i].position.m_x + ( u_rand - 0.5 ) * delta_r );
-                    _y = Image( this->p[i].position.m_y + ( u_rand - 0.5 ) * delta_r );
-                    _z = Image( this->p[i].position.m_z + ( u_rand - 0.5 ) * delta_r );
-                    _r.Set( _x, _y, _z );
+                    for ( int k = 0; k < D; k++ )
+                        _r.x[k] = Image( p[i].position.x[k] + ( u_rand - 0.5 ) * delta_r );
                     this->NewState( i, _r, c_p, no_overlap );
                     if ( no_overlap ) 
                     {
                         accept++;
-                        this->p[i].position.Set( _x, _y, _z );
+                        this->p[i].position = _r;
                         /* Sync overlaps */                           
                         for ( auto & l : c_p ) 
                         {
@@ -565,14 +622,14 @@ int Packing::Step()
                             }
                         }
                         /* Sync sectors */
-                        int x = static_cast<int>( this->p[i].position.m_x / Sector::s_length );
-                        int y = static_cast<int>( this->p[i].position.m_y / Sector::s_length );
-                        int z = static_cast<int>( this->p[i].position.m_z / Sector::s_length );
-                        int new_sector = Sector::Find( x, y, z );
+                        Vector<int, D> _s;
+                        for ( int k = 0; k < D; k++ )  
+                            _s.x[k] = static_cast<int>( p[i].position.x[k] / b->SectorLength );
+                        int new_sector = b->FindSector( _s );
                         if ( new_sector != this->p[i].sector ) 
                         {
-                            this->s[ this->p[i].sector ].member_list.remove(i);
-                            this->s[ new_sector ].member_list.push_back(i);
+                            b->s[ this->p[i].sector ].member_list.remove(i);
+                            b->s[ new_sector ].member_list.push_back(i);
                             this->p[i].sector = new_sector;
                         }
                     } 
@@ -602,23 +659,21 @@ int Packing::Step()
         }
         case Potential::SoftRepulsive: 
         {
-            double _x, _y, _z, rnd, dE;
+            double rnd, dE;
             bool no_overlap;
-            Vector _r;
+            Vector<double, D> _r;
             std::vector<Local> c_p;
             for ( int i = 0; i < N; i++ ) 
             {
                 no_overlap = true;
-                _x = Image( this->p[i].position.m_x + ( u_rand - 0.5 ) * delta_r );
-                _y = Image( this->p[i].position.m_y + ( u_rand - 0.5 ) * delta_r );
-                _z = Image( this->p[i].position.m_z + ( u_rand - 0.5 ) * delta_r );
-                _r.Set( _x, _y, _z );
+                for ( int k = 0; k < D; k++ )
+                    _r.x[k] = Image( p[i].position.x[k] + ( u_rand - 0.5 ) * delta_r );
                 dE = this->NewState_( i, _r, c_p, no_overlap );
                 rnd = u_rand;
                 if ( rnd < exp( -dE / T ) && no_overlap ) 
                 {
                     accept++;
-                    this->p[i].position.Set( _x, _y, _z );
+                    this->p[i].position = _r;
                     /* Sync energy and overlaps */ 
                     for ( auto & l : c_p ) 
                     {
@@ -630,14 +685,14 @@ int Packing::Step()
                         }
                     }
                     /* Sync sector */
-                    int x = static_cast<int>( _x / Sector::s_length );
-                    int y = static_cast<int>( _y / Sector::s_length );
-                    int z = static_cast<int>( _z / Sector::s_length );
-                    int new_sector = Sector::Find( x, y, z );
+                    Vector<int, D> _s;
+                    for ( int k = 0; k < D; k++ )  
+                        _s.x[k] = static_cast<int>( p[i].position.x[k] / b->SectorLength );
+                    int new_sector = b->FindSector( _s );
                     if ( new_sector != this->p[i].sector ) 
                     {
-                        this->s[ this->p[i].sector ].member_list.remove(i);
-                        this->s[ new_sector ].member_list.push_back(i);
+                        b->s[ this->p[i].sector ].member_list.remove(i);
+                        b->s[ new_sector ].member_list.push_back(i);
                         this->p[i].sector = new_sector;
                     }
                 }
@@ -760,7 +815,7 @@ bool Packing::Drift( int i )
 {
     int count = 0;
 	double d, mod, p, r_ij, sigma_ij;
-	Vector rel, F0, F;
+	Vector<double, D> rel, F0, F;
 	F0 = 2 * L;
 	do {
     count++;
@@ -771,17 +826,17 @@ bool Packing::Drift( int i )
 		if ( Packing::State( r_ij, sigma_ij ) == Interaction::State::Overlap ) {
 			rel = this->p[i].position - this->p[j].position;
 			d = Distance_sq( this->p[i].position, this->p[j].position );
-			mod = rel.SqrtMod();
+			mod = rel.Mag();
 			if ( d != mod )
-				rel = -rel;
+				rel = rel * (-1);
 			rel = rel/mod;
 
 			p = ( this->p[i].diameter + this->p[j].diameter ) / 2 - d;
-			F = F + p*rel;
+			F = F + rel*p;
 		}
 	}
 	this->p[i].move(F);
-	if ( F == (-F0) || count > N / 50 ) {
+	if ( F == (F0 * (-1)) || count > N / 50) {
 		//std::cout << "CAGED" << std::endl;
 		return true;
 	}
