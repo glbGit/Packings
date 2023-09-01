@@ -27,39 +27,41 @@ double BoundaryConditions::Periodic::Image( double x )
     }
 }
 
-double BoundaryConditions::Periodic::Distance_sq( double x, double y )
+inline double BoundaryConditions::Periodic::Distance( double x, double y )
 {
     double d = x - y;
     if ( d > L_H )
         d = d - L;
     else if ( d < -L_H )
         d = d + L;
+    return d;
+}
+
+inline double BoundaryConditions::Periodic::Distance_sq( double x, double y )
+{
+    double d = Distance( x, y );
     return d * d;
 }
 
-double BoundaryConditions::Periodic::Distance_sq( Vector<double, D> & a, Vector<double, D> & b )
+inline double BoundaryConditions::Periodic::Distance_sq( Vector<double, D> & a, Vector<double, D> & b )
 {
-    Vector<double, D> Diff = a - b;
+    double Sum = 0;
     for( int i = 0; i < D; i++ )
-        Diff.x[i] = Image( Diff.x[i] );
+       Sum = Sum + Distance_sq( a.x[i], b.x[i] );
     
-    return Diff.MagSq();
+    return Sum;
 }
 
-double BoundaryConditions::Periodic::Distance( Vector<double, D> & a, Vector<double, D> & b )
+inline double BoundaryConditions::Periodic::Distance( Vector<double, D> & a, Vector<double, D> & b )
 {
-    Vector<double, D> Diff = a - b;
-    for (int i = 0; i < D; i++)
-        Diff.x[i] = Image(Diff.x[i]);
-
-    return Diff.Mag();
+    return sqrt( Distance_sq( a, b ) );
 }
 
-Vector<double, D> BoundaryConditions::Periodic::Relative( Vector<double, D> a, Vector<double, D> b ) // returns periodic Vector (a-b)
+inline Vector<double, D> BoundaryConditions::Periodic::Relative( Vector<double, D> a, Vector<double, D> b ) 
 {
-    Vector<double, D> Diff = a - b;
-    for (int i = 0; i < D; i++)
-        Diff.x[i] = Image(Diff.x[i]);
+    Vector<double, D> Diff;
+    for( int i = 0; i < D; i++ )
+       Diff.x[i] = Distance( a.x[i], b.x[i] );
 
     return Diff;
 }
@@ -87,8 +89,37 @@ Box::Sector::Sector()
 {
 }
 
-void Box::Sector::MakeNeighbors()
+void Box::MakeNeighbors()
 {
+    for ( int l = 0; l < NumOfSectors; l++ )
+    { 
+        // Assign coordinates to sectors
+        int residue = l;
+        for (int k = 0; k < D; k++)
+        {
+            int den = Packings::iPow( SectorsPerSide, D - k - 1 );
+            s[l].coord.x[k] = residue / den;
+            residue = residue % den;
+        }
+
+        // Neighbors
+        Vector<int, D> v, w;
+        for (int k = 0; k < D; k++)
+            w.x[k] = 1;
+
+        for (int i = 0; i < NumOfNeighborSectors; i++)
+        {
+            for (int k = 0; k < D; k++)
+            {
+                v.x[k] = s[l].coord.x[k];
+                v.x[k] += SectorsPerSide + w.x[k];
+                v.x[k] %= SectorsPerSide;
+            }
+            s[l].neighbor_list.push_back( FindSector(v) );
+            if ( Decrease( D - 1, w ) ) Packings::Exit( SECTOR_FAIL, { "Something went wrong while defining neighbors." } );
+        }
+
+    }
 }
 
 int Box::Decrease( int Layer, Vector<int, D> & SectorCoord )
@@ -97,9 +128,9 @@ int Box::Decrease( int Layer, Vector<int, D> & SectorCoord )
     if ( Layer < 0 || Layer >= D )
         return 1;
     SectorCoord.x[ Layer ] -= 1;
-    if (SectorCoord.x[Layer] < bottom)
+    if ( SectorCoord.x[ Layer ] < bottom )
     {
-        SectorCoord.x[Layer] = top;
+        SectorCoord.x[ Layer ] = top;
         return Decrease( Layer - 1, SectorCoord );
     }
     return 0;
@@ -117,50 +148,3 @@ int Box::FindSector( Vector<int, D> & SectorCoord )
     }
     return n;
 }
-
-/**************************************************************
-
-static void make_sector_neighbors(sector *s)
-{
-    vector_int v, w;
-    for (int k = 0; k < D; k++)
-        w.x[k] = 1;
-
-    for (int i = 0; i < b.sector_number_of_neighbors; i++)
-    {
-        for (int k = 0; k < D; k++)
-        {
-            v.x[k] = s->x[k];
-            v.x[k] += b.sectors_per_side + w.x[k];
-            v.x[k] %= b.sectors_per_side;
-        }
-        s->neighbor[i] = find_sector(&v);
-        if (decrease(D - 1, &w))
-        {
-            printf("Error (sector): Something went wrong while defining neighbors.\n");
-            exit(1);
-        }
-    }
-}
-
-static void make_sectors()
-{
-    for (int i = 0; i < b.number_of_sectors; i++)
-    {
-        b.s[i].m = malloc(sizeof(int) * b.sector_max_members);
-        b.s[i].neighbor = malloc(sizeof(int) * b.sector_number_of_neighbors);
-        int residue = i;
-        for (int k = 0; k < D; k++)
-        {
-            int den = _ipow(b.sectors_per_side, D - k - 1);
-            b.s[i].x[k] = residue / den;
-            residue = residue % den;
-        }
-        b.s[i].buffer = 0;
-        for (int l = 0; l < b.sector_max_members; l++)
-            b.s[i].m[l] = empty_slot;
-        make_sector_neighbors(&b.s[i]);
-    }
-}
-
-***********************************************************/

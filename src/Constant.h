@@ -58,6 +58,7 @@ namespace Constant
 #define INVALID_INTERACTION                 0x05
 #define INVALID_PARAMETER                   0x07
 #define UNDEFINED_DISTRIBUTION              0x08
+#define SECTOR_FAIL                         0x09
 #define STEPS_OVERFLOW                      0xf0
 #define RELOCATION_OVERFLOW                 0xf1
 #define NO_INDEX                            -99
