@@ -80,7 +80,7 @@ void Packing::Make()
     printf( "Particles successfully added.\n" );
 
     // Box
-    double s_max_star = pow(Phi_t / phi * pow(info.sigma_max, D), 1. / D);
+    double s_max_star = pow(phi_t / phi * pow(info.sigma_max, D), 1. / D);
     static Box _Box( s_max_star );
     b = &_Box;
     b->MakeNeighbors();
@@ -150,7 +150,7 @@ void Packing::Make( const char * filename )
     Distribution::Info info = GetDistributionInfo();
 
     // Box
-    double s_max_star = pow(Phi_t / phi * pow(info.sigma_max, D), 1. / D);
+    double s_max_star = pow(phi_t / phi * pow(info.sigma_max, D), 1. / D);
     static Box _Box( s_max_star );
     b = &_Box;
     b->MakeNeighbors();
@@ -173,7 +173,7 @@ void Packing::Make( const char * filename )
 void Packing::PrintToFile() 
 {
     FILE * out;
-    out = fopen( "output.dat", "w+" );
+    out = fopen( "data/output.dat", "w+" );
     if ( out != NULL )
     {
         for ( int i = 0; i < N; i++ )
@@ -222,7 +222,7 @@ void Packing::PrintToFile( FILE * out, int frame )
 /* Prints diameter distribution. */
 void Packing::PrintDiameterDistribution()
 { 
-    FILE * file = fopen( "diameter_distribution.dat", "w+" );
+    FILE * file = fopen( "data/diameter_distribution.dat", "w+" );
     if ( file != NULL )
     {
         int count;
@@ -275,8 +275,8 @@ void Packing::PrintSystemInfo( On time )
 			"Phi_t = %g\n"
 			"dr = %g\n"
 			"-----------------------------------------------\n",
-			D, N, L, PSwap, DType, Ratio, b->SectorsPerSide,  
-			a0, this->phi, Phi_t, delta_r
+			D, N, L, chSwap, DType, Ratio, b->SectorsPerSide,  
+			a0, this->phi, phi_t, delta_r
 		);
 		break;
 	
@@ -323,7 +323,7 @@ inline int Packing::Overlaps() {  return static_cast<int>( this->overlap_list.si
 double Packing::Energy()
 {
 	double energy = 0;
-	for ( int i = 0; i < Constant::NumOfPairs; i++ ) 
+	for ( int i = 0; i < Constant::numOfPairs; i++ ) 
         energy = energy + this->c[i].energy;
 	return energy;
 }
@@ -603,10 +603,12 @@ int Packing::Step()
             {
                 no_overlap = true;
                 rnd = u_rand;
-                if ( rnd < 1 - PSwap )                    /* Standard Monte Carlo move */
+                if ( rnd < 1 - chSwap )                    /* Standard Monte Carlo move */
                 { 
+			        double scalingFactor = 1 / ( p[i].diameter * p[i].diameter );
+			        scalingFactor = scalingFactor < b->SectorLength ? scalingFactor : b->SectorLength;
                     for ( int k = 0; k < D; k++ )
-                        _r.x[k] = Image( p[i].position.x[k] + ( u_rand - 0.5 ) * delta_r );
+                        _r.x[k] = Image( p[i].position.x[k] + ( u_rand - 0.5 ) * delta_r * scalingFactor );
                     this->NewState( i, _r, c_p, no_overlap );
                     if ( no_overlap ) 
                     {
@@ -711,7 +713,7 @@ int Packing::Step()
 void Packing::Compress()
 {
     printf( "Compression in progress..    " ); 
-    while ( this->phi < Phi_t ) 
+    while ( this->phi < phi_t ) 
     {
         int count = 0, accept = 0;
         /* Compress */
@@ -727,7 +729,7 @@ void Packing::Compress()
             this->accepted = this->accepted + this->Step();
             this->Update( System::State::Relaxation );
             count++;
-            if ( count > MaxSteps ) 
+            if ( count > maxSteps ) 
             {  
                 printf( " - System failed to compress.\n\n" );
                 /* Decompress on exit */

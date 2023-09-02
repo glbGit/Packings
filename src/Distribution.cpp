@@ -7,9 +7,9 @@ Distribution::Info Distribution::GetDistributionInfo()
 {
     Info info{};
     double ratio = Ratio;
-    double exp_sigma_D = exp( lgamma(1. + (double) D / 2.) ) * Phi_0 * pow( L, D ) / N / pow( 0.25 * Pi, (double) D / 2.);
+    double exp_sigma_D = exp( lgamma(1. + (double) D / 2.) ) * phi_0 * pow( L, D ) / N / pow( 0.25 * Pi, (double) D / 2.);
 
-    if ( Phi_0 < epsilon )
+    if ( phi_0 < epsilon )
     {
         info.type = Type::Uniform;
         info.sigma_min = info.sigma_max = 0;

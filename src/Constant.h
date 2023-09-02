@@ -25,14 +25,14 @@ namespace Constant
 
     /* Packing */
     static constexpr UL          N = 1000;                              // Number of particles
-    static constexpr ULL         NumOfPairs = ( N * (N - 1) ) / 2;      // Number of pairs
-    static constexpr UL          MaxSteps = 1000;                       // Max iterations
+    static constexpr ULL         numOfPairs = ( N * (N - 1) ) / 2;      // Number of pairs
+    static constexpr UL          maxSteps = 1000;                       // Max iterations
     static constexpr double      T = 0.04;                              // Temperature
-    static constexpr double      PSwap = 0.2;                           // Swap probability
+    static constexpr double      chSwap = 0.2;                           // Swap probability
     static constexpr double      delta_r = 0.05;                        // Max side displacement 
-    static constexpr double      Phi_0 = 0.1;                           // Initial packing fraction
-    static constexpr double      Phi_t = 0.7;                           // Target packing fraction
-    static const bool            InitialRelaxation = false;             // If true, perform a very brief relaxation in a soft repulsive potential. 
+    static constexpr double      phi_0 = 0.1;                           // Initial packing fraction
+    static constexpr double      phi_t = 0.7;                           // Target packing fraction
+    static const bool            initialRelaxation = false;             // If true, perform a very brief relaxation in a soft repulsive potential. 
 
     /* Diameter distribution */
     static constexpr int         DType = 2;                              // Type
