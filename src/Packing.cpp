@@ -75,7 +75,8 @@ void Packing::Make()
 		    phi = phi + sigma;
         }
 	}
-	phi = phi * vol_c;
+    vol_const = pow( 0.25 * Pi, 0.5 * D ) / pow( L, D ) / exp( lgamma( 1 + 0.5 * D ) );
+	phi = phi * vol_const;
 
     printf( "Particles successfully added.\n" );
 
@@ -141,7 +142,7 @@ void Packing::Make( const char * filename )
 		    phi = phi + sigma;
 
 	    }
-	    phi = phi * vol_c;
+	    phi = phi * vol_const;
         fclose( stream );
     } else Exit( DIR_NOT_FOUND, { "File \"", filename, "\" not found." } );
     printf( "Particles successfully added.\n" );
@@ -314,7 +315,7 @@ inline double Packing::VolumeFraction()
 		    sigma = sigma * p[i].diameter;
 	    phi = phi + sigma;
     }
-    phi = phi * vol_c;
+    phi = phi * vol_const;
 	return phi;
 }
 
@@ -344,11 +345,17 @@ void Packing::FullUpdate()
 {
     this->overlap_list.clear();
 
-    int count = 0;
-    for ( int i = 0; i < N; i++ ) {
-        phi = phi + vol_c * p[i].diameter * p[i].diameter * p[i].diameter;
+    phi = 0;
+    for ( int i = 0; i < N; i++ ) 
+    {
+		double sigma = 1;
+		for ( int k = 0; k < D; k++ )
+			sigma = sigma * p[i].diameter;
+		phi = phi + sigma;
+
         this->p[i].first_neighbors.clear();                        
     }
+    phi = phi * vol_const;
         
     for ( int k = 0; k < b->NumOfSectors; k++ ) 
     {       /* This sector */

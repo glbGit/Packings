@@ -101,6 +101,7 @@ public:
     std::list<ULL>                  overlap_list;
     double                          energy;
     double                          phi;
+    double                          vol_const;
     int                             steps;
     int                             accepted;
 };

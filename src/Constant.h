@@ -21,7 +21,6 @@ namespace Constant
     /* Box */
     static constexpr double      L = 10;                                // Box size 
     static constexpr double      L_H = L / 2;                           // Box half side
-    static constexpr double      vol_c = Pi / 6. / L/L/L; 
 
     /* Packing */
     static constexpr UL          N = 1000;                              // Number of particles
