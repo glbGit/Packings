@@ -9,7 +9,7 @@
 // Macros
 
 #define u_rand ( (double) rand() / RAND_MAX )                  // Uniform-distributed random number in [0,1].
-#define u_rand_in(A, B) ( u_rand * (B - A) + A )               // Uniform-distributed random number in [A,B].
+#define u_rand_in(A, B) ( u_rand * ((B) - (A)) + (A) )               // Uniform-distributed random number in [A,B].
 #define to_cstr(val) std::to_string(val).c_str()
 
 //---------------------------------------------------------------------------------------------------------------
