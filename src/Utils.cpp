@@ -37,11 +37,10 @@ void Packings::Time( On _time )
 #ifdef _LINUX
 	localtime_r( &rawtime, &timeinfo );
     asctime_r( &timeinfo, time_s );
-#endif
-#ifdef _WINDOWS
+#else
 	localtime_s( &timeinfo, &rawtime );
     asctime_s( time_s, &timeinfo );
-#endif
+#endif // _LINUX
     switch ( _time )
     {
     case On::Begin: 
