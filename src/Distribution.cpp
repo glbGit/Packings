@@ -11,7 +11,7 @@ Distribution::Info Distribution::GetDistributionInfo()
 
     if ( phi_0 < epsilon )
     {
-        info.type = Type::Uniform;
+        info.type = Uniform;
         info.sigma_min = info.sigma_max = 0;
         return info;
     }
@@ -52,6 +52,7 @@ Distribution::Info Distribution::GetDistributionInfo()
         int n = (int) info.param[0];
         if ( n == 0 )
         {
+            info.type = Uniform;
             info.sigma_max = pow( ( ( D + 1 ) * ( 1 - ratio ) / ( 1 - pow(ratio, D + 1 ) ) ) * exp_sigma_D, 1. / D );
             info.sigma_min = ratio * info.sigma_max;
             return info;
