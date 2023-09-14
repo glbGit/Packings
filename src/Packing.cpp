@@ -774,17 +774,21 @@ double Packing::GetMaxDiameter()
 }
 
 double Packing::GetDispersity()
-{
-    double m_1 = 0;
-    double m_2 = 0;
-    for (int i = 0; i < N; i++)
+{	
+    double eval = 0;
+    for ( int i = 0; i < N; i++ )
+        eval += p[i].diameter;
+    eval /= N;
+	
+    double var = 0;
+    for ( int i = 0; i < N; i++ )
     {
-        m_1 += this->p[i].diameter;
-        m_2 += this->p[i].diameter * this->p[i].diameter;
+        double diff = p[i].diameter - eval;
+        var += diff * diff;
     }
-    m_1 /= N;
-    m_2 /= N;
-    return sqrt(m_2 / (m_1 * m_1) - 1);
+    var /= N;
+	
+    return sqrt( var ) / eval;
 }
 
 /* Return the interaction state between two given particles. */
