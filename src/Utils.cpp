@@ -70,10 +70,10 @@ void Packings::Time( On _time )
 * @param Code Error identifier;
 * @param Message Message to display.
 */
-void Packings::Exit( int Code, std::vector<const char *> Message )
+void Packings::Exit( int code, std::vector<const char *> message )
 {
-    printf( "\nError(%x): ", Code );
-    for ( auto Block : Message ) printf( Block );
+    printf( "\nError(%x): ", code );
+    for ( auto Block : message ) printf( Block );
     printf("\n");
-    exit( Code ); 
+    exit( code ); 
 }

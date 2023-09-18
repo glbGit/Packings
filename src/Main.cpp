@@ -27,7 +27,7 @@ int main()
 	R.PrintSystemInfo( On::Start );
 
 	/* Relax */
-	if ( initialRelaxation )
+	if ( InitialRelaxation )
 	{
 		interaction_type = Potential::SoftRepulsive;
 

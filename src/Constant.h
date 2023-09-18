@@ -15,7 +15,7 @@ namespace Constant
 {
     /* General */
     static constexpr int         D = 3;                                 // Dimensions 
-    static constexpr double      epsilon = 1.e-15;                      // Precision
+    static constexpr double      Epsilon = 1.e-15;                      // Precision
     static constexpr double      Pi = 3.1415926535897932384626433;      // Pi
 
     /* Box */
@@ -24,14 +24,14 @@ namespace Constant
 
     /* Packing */
     static constexpr UL          N = 1000;                              // Number of particles
-    static constexpr ULL         numOfPairs = ( N * (N - 1) ) / 2;      // Number of pairs
-    static constexpr UL          maxSteps = 1000;                       // Max iterations
+    static constexpr ULL         NumOfPairs = ( N * (N - 1) ) / 2;      // Number of pairs
+    static constexpr UL          MaxSteps = 1000;                       // Max iterations
     static constexpr double      T = 0.04;                              // Temperature
-    static constexpr double      chSwap = 0.2;                           // Swap probability
-    static constexpr double      delta_r = 0.05;                        // Max side displacement 
-    static constexpr double      phi_0 = 0.1;                           // Initial packing fraction
-    static constexpr double      phi_t = 0.7;                           // Target packing fraction
-    static const bool            initialRelaxation = false;             // If true, perform a very brief relaxation in a soft repulsive potential. 
+    static constexpr double      SwapChance = 0.2;                           // Swap probability
+    static constexpr double      Delta_r = 0.0005;                        // Max side displacement 
+    static constexpr double      Phi_0 = 0.1;                           // Initial packing fraction
+    static constexpr double      Phi_t = 0.7;                           // Target packing fraction
+    static const bool            InitialRelaxation = false;             // If true, perform a very brief relaxation in a soft repulsive potential. 
 
     /* Diameter distribution */
     static constexpr int         DType = 2;                              // Type
@@ -39,7 +39,7 @@ namespace Constant
     static constexpr double      Ratio = 0.45;                           // SigmaMin/SigmaMax
 
     /* Growth */ 
-    static const double          a0 = delta_r * 0.1;          
+    static const double          a0 = Delta_r * 0.1;          
 
     /* Potential */
     static const double          b = 25; 

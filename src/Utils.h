@@ -28,5 +28,5 @@ namespace Packings
     int iPow( int base, int exponent );
     unsigned long long Factorial( unsigned long long n );
     void Time( On _time );
-    void Exit( int Code, std::vector<const char *> Message );
+    void Exit( int code, std::vector<const char *> message );
 }

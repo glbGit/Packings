@@ -151,7 +151,7 @@ template <class Ty, int Dim>
 bool Vector<Ty, Dim>::operator==( Vector v ) 
 {
 	for ( int i = 0; i < Dim; i++ )
-		if ( fabs( x[i] - v.x[i] ) > epsilon ) return false;
+		if ( fabs( x[i] - v.x[i] ) > Epsilon ) return false;
 	return true;
 }
 

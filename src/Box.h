@@ -30,9 +30,9 @@ public:
     double              Volume;
     double              SectorLength;
     double              SectorLengthInverse;
-    int                 NumOfSectors;
-    int                 SectorsPerSide;
-    int                 NumOfNeighborSectors;
+    int                 numOfSectors;
+    int                 sectorsPerSide;
+    int                 numOfNeighborSectors;
 
 };
 

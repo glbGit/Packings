@@ -7,12 +7,12 @@ Box::Box( double SigmaMax ) :
     HalfSize ( 0.5 * L )
 {
     Volume = pow( L, D );
-    SectorsPerSide = (int ) ( L / SigmaMax );
-    NumOfSectors = Packings::iPow( SectorsPerSide, D );
-    SectorLength = (double ) L / SectorsPerSide;
+    sectorsPerSide = (int ) ( L / SigmaMax );
+    numOfSectors = Packings::iPow( sectorsPerSide, D );
+    SectorLength = (double ) L / sectorsPerSide;
     SectorLengthInverse = 1. / SectorLength;
-    NumOfNeighborSectors = ( Packings::iPow( 3, D ) - 1 ) / 2;
-    s = new Sector[ NumOfSectors ];
+    numOfNeighborSectors = ( Packings::iPow( 3, D ) - 1 ) / 2;
+    s = new Sector[ numOfSectors ];
 
 }
 
@@ -27,13 +27,13 @@ Box::Sector::Sector()
 
 void Box::MakeNeighbors()
 {
-    for ( int l = 0; l < NumOfSectors; l++ )
+    for ( int l = 0; l < numOfSectors; l++ )
     { 
         // Assign coordinates to sectors
         int residue = l;
         for (int k = 0; k < D; k++)
         {
-            int den = Packings::iPow( SectorsPerSide, D - k - 1 );
+            int den = Packings::iPow( sectorsPerSide, D - k - 1 );
             s[l].coord.x[k] = residue / den;
             residue = residue % den;
         }
@@ -43,13 +43,13 @@ void Box::MakeNeighbors()
         for (int k = 0; k < D; k++)
             w.x[k] = 1;
 
-        for (int i = 0; i < NumOfNeighborSectors; i++)
+        for (int i = 0; i < numOfNeighborSectors; i++)
         {
             for (int k = 0; k < D; k++)
             {
                 v.x[k] = s[l].coord.x[k];
-                v.x[k] += SectorsPerSide + w.x[k];
-                v.x[k] %= SectorsPerSide;
+                v.x[k] += sectorsPerSide + w.x[k];
+                v.x[k] %= sectorsPerSide;
             }
             s[l].neighbor_list.push_back( FindSector(v) );
             if ( Decrease( D - 1, w ) ) Packings::Exit( SECTOR_FAIL, { "Something went wrong while defining neighbors." } );
@@ -79,7 +79,7 @@ int Box::FindSector( Vector<int, D> & SectorCoord )
     {
         int c = 1;
         for ( int l = k; l < D - 1; l++ )
-            c = c * SectorsPerSide;
+            c = c * sectorsPerSide;
         n = n + SectorCoord.x[k] * c;
     }
     return n;

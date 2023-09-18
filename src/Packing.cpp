@@ -81,7 +81,7 @@ void Packing::Make()
     printf( "Particles successfully added.\n" );
 
     // Box
-    double s_max_star = pow(phi_t / phi * pow(info.sigma_max, D), 1. / D);
+    double s_max_star = pow(Phi_t / phi * pow(info.sigma_max, D), 1. / D);
     static Box _Box( s_max_star );
     b = &_Box;
     b->MakeNeighbors();
@@ -151,7 +151,7 @@ void Packing::Make( const char * filename )
     Distribution::Info info = GetDistributionInfo();
 
     // Box
-    double s_max_star = pow(phi_t / phi * pow(info.sigma_max, D), 1. / D);
+    double s_max_star = pow(Phi_t / phi * pow(info.sigma_max, D), 1. / D);
     static Box _Box( s_max_star );
     b = &_Box;
     b->MakeNeighbors();
@@ -276,8 +276,8 @@ void Packing::PrintSystemInfo( On time )
 			"Phi_t = %g\n"
 			"dr = %g\n"
 			"-----------------------------------------------\n",
-			D, N, L, chSwap, DType, Ratio, b->SectorsPerSide,  
-			a0, this->phi, phi_t, delta_r
+			D, N, L, SwapChance, DType, Ratio, b->sectorsPerSide,  
+			a0, this->phi, Phi_t, Delta_r
 		);
 		break;
 	
@@ -324,7 +324,7 @@ inline int Packing::Overlaps() {  return static_cast<int>( this->overlap_list.si
 double Packing::Energy()
 {
 	double energy = 0;
-	for ( int i = 0; i < Constant::numOfPairs; i++ ) 
+	for ( int i = 0; i < Constant::NumOfPairs; i++ ) 
         energy = energy + this->c[i].energy;
 	return energy;
 }
@@ -357,7 +357,7 @@ void Packing::FullUpdate()
     }
     phi = phi * vol_const;
         
-    for ( int k = 0; k < b->NumOfSectors; k++ ) 
+    for ( int k = 0; k < b->numOfSectors; k++ ) 
     {       /* This sector */
         for ( auto i : b->s[k].member_list )
         {
@@ -472,7 +472,7 @@ void Packing::Update( System::State state )
     {
         for ( int i = 0; i < N; i++ )  this->p[i].first_neighbors.clear();
         
-        for ( int k = 0; k < b->NumOfSectors; k++ ) 
+        for ( int k = 0; k < b->numOfSectors; k++ ) 
         {       /* This sector */
             for ( auto i : b->s[k].member_list )
             {
@@ -610,12 +610,12 @@ int Packing::Step()
             {
                 no_overlap = true;
                 rnd = u_rand;
-                if ( rnd < 1 - chSwap )                    /* Standard Monte Carlo move */
+                if ( rnd < 1 - SwapChance )                    /* Standard Monte Carlo move */
                 { 
 			        double scalingFactor = 1 / ( p[i].diameter * p[i].diameter );
 			        scalingFactor = scalingFactor < b->SectorLength ? scalingFactor : b->SectorLength;
                     for ( int k = 0; k < D; k++ )
-                        _r.x[k] = Image( p[i].position.x[k] + ( u_rand - 0.5 ) * delta_r * scalingFactor );
+                        _r.x[k] = Image( p[i].position.x[k] + ( u_rand - 0.5 ) * Delta_r * scalingFactor );
                     this->NewState( i, _r, c_p, no_overlap );
                     if ( no_overlap ) 
                     {
@@ -676,7 +676,7 @@ int Packing::Step()
             {
                 no_overlap = true;
                 for ( int k = 0; k < D; k++ )
-                    _r.x[k] = Image( p[i].position.x[k] + ( u_rand - 0.5 ) * delta_r );
+                    _r.x[k] = Image( p[i].position.x[k] + ( u_rand - 0.5 ) * Delta_r );
                 dE = this->NewState_( i, _r, c_p, no_overlap );
                 rnd = u_rand;
                 if ( rnd < exp( -dE / T ) && no_overlap ) 
@@ -720,7 +720,7 @@ int Packing::Step()
 void Packing::Compress()
 {
     printf( "Compression in progress..    " ); 
-    while ( this->phi < phi_t ) 
+    while ( this->phi < Phi_t ) 
     {
         int count = 0, accept = 0;
         /* Compress */
@@ -736,7 +736,7 @@ void Packing::Compress()
             this->accepted = this->accepted + this->Step();
             this->Update( System::State::Relaxation );
             count++;
-            if ( count > maxSteps ) 
+            if ( count > MaxSteps ) 
             {  
                 printf( " - System failed to compress.\n\n" );
                 /* Decompress on exit */
@@ -795,15 +795,15 @@ double Packing::GetDispersity()
 Interaction::State Packing::State( double r_sq, double sigma )
 {
     double r_cut_sq;
-    if ( interaction_type == Potential::Hard ) r_cut_sq = s_max + 2 * delta_r;   
-    else r_cut_sq = 0.5 * s_max + sigma + 2 * delta_r;
+    if ( interaction_type == Potential::Hard ) r_cut_sq = s_max + 2 * Delta_r;   
+    else r_cut_sq = 0.5 * s_max + sigma + 2 * Delta_r;
     r_cut_sq = r_cut_sq * r_cut_sq;
 	if ( r_sq > r_cut_sq ) return Interaction::State::Free;
     else
     {
         sigma = sigma * sigma;
-        if ( r_sq > sigma + epsilon )  return Interaction::State::FirstNeighbor;
-        else if ( r_sq < sigma - epsilon ) return Interaction::State::Overlap;  
+        if ( r_sq > sigma + Epsilon )  return Interaction::State::FirstNeighbor;
+        else if ( r_sq < sigma - Epsilon ) return Interaction::State::Overlap;  
         else return Interaction::State::Contact;           
     } 
 }
@@ -818,7 +818,7 @@ bool Packing::DoesOverlap( int j, int n )
             r_ij = Distance_sq( this->p[i].position, this->p[j].position );
             sigma_ij = ( this->p[i].diameter + this->p[j].diameter ) / 2;
             sigma_ij *= sigma_ij;
-			if ( r_ij < sigma_ij - epsilon ) return true;
+			if ( r_ij < sigma_ij - Epsilon ) return true;
         }
 	}
 	return false;

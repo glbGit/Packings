@@ -7,9 +7,9 @@ Distribution::Info Distribution::GetDistributionInfo()
 {
     Info info{};
     double ratio = Ratio;
-    double exp_sigma_D = exp( lgamma(1. + (double) D / 2.) ) * phi_0 * pow( L, D ) / N / pow( 0.25 * Pi, (double) D / 2.);
+    double exp_sigma_D = exp( lgamma(1. + (double) D / 2.) ) * Phi_0 * pow( L, D ) / N / pow( 0.25 * Pi, (double) D / 2.);
 
-    if ( phi_0 < epsilon )
+    if ( Phi_0 < Epsilon )
     {
         info.type = Uniform;
         info.sigma_min = info.sigma_max = 0;
@@ -19,7 +19,7 @@ Distribution::Info Distribution::GetDistributionInfo()
     if ( ratio < 0 )  Exit( INVALID_PARAMETER, { "Diameters ratio must be positive." } );
     if ( ratio > 1 ) ratio = 1. / ratio;
 
-    if ( fabs( ratio - 1 ) < epsilon )
+    if ( fabs( ratio - 1 ) < Epsilon )
     {
         info.type = Type::Uniform;
         info.sigma_min = info.sigma_max = pow( exp_sigma_D, 1. / D );
@@ -115,7 +115,7 @@ double Distribution::RandomDiameter( const Info & d )
 {
     double diameter = 0;
     double a = d.sigma_min, b = d.sigma_max;
-    if ( b - a < epsilon )
+    if ( b - a < Epsilon )
         return a;
     switch ( d.type )
     {
@@ -152,7 +152,7 @@ double Distribution::RandomDiameter( const Info & d )
             do
             {
                 u1 = u_rand;
-            } while ( u1 <= epsilon );
+            } while ( u1 <= Epsilon );
         u2 = u_rand;
 
         mag = sigma_z * sqrt( -2.0 * log(u1) );
