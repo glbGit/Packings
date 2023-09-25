@@ -46,7 +46,7 @@ void Particle::move( double t )
     Vector<double, D> vt = this->velocity * t;
     Vector<double, D> NewPosition = this->position + vt;
     for ( int i = 0; i < D; i++ )
-        NewPosition.x[i] =  BoundaryConditions::Periodic::Image( NewPosition.x[i] );
+        NewPosition.x[i] =  IMAGE( NewPosition.x[i] );
     position = NewPosition; 
 }
 
@@ -54,7 +54,7 @@ void Particle::move( Vector<double, D> r )
 { 
     Vector<double, D> NewPosition = this->position + r;
     for ( int i = 0; i < D; i++ )
-        NewPosition.x[i] =  BoundaryConditions::Periodic::Image( NewPosition.x[i] );
+        NewPosition.x[i] =  IMAGE( NewPosition.x[i] );
     this->position = NewPosition; 
 }
 
