@@ -22,8 +22,9 @@ Packing::Packing() :
 {
     g = new double[N];
     p = new Particle[N];
-    c = new Local[ (N * (N - 1) ) / 2 ];
-    for ( int i = 0; i < N; i++ ) {
+    c = new Local[ NumOfPairs ];
+    for ( int i = 0; i < N; i++ ) 
+    {
         p[i] = Particle{ };
         g[i] = 2;
     }
