@@ -188,7 +188,7 @@ template <class Ty, int Dim>
 inline void Vector<Ty, Dim>::SetRandomComponents( Ty a, Ty b ) 
 { 
 	for ( size_t i = 0; i < Dim; i++ )
-		x[i] = u_rand_in( a, b );
+		x[i] = RAND_IN( a, b );
 }
 
 template <class Ty, int Dim>

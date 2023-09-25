@@ -7,8 +7,14 @@
 //---------------------------------------------------------------------------------------------------------------
 // Macros
 
-#define u_rand ( (double) rand() / RAND_MAX )                  // Uniform-distributed random number in [0,1].
-#define u_rand_in(A, B) ( u_rand * ((B) - (A)) + (A) )               // Uniform-distributed random number in [A,B].
+#define RAND ( (double) rand() / RAND_MAX )                             // Uniform-distributed random number in [0,1].
+#define RAND_IN(A, B) ( RAND * ((B) - (A)) + (A) )                      // Uniform-distributed random number in [A,B].
+
+#define SQUARE(x) ( (x) * (x) )                                         // Square
+#define ABS(x) ( (x) < 0 ? (x) * (-1) : (x) )                           // Absolute value
+#define SGN(x) ( (x) < 0 ? -1 : 1 )                                     // Sign function
+#define H(x) ( (x) < 0 ? 0 : 1 )                                        // Heaviside function
+
 #define to_cstr(val) std::to_string(val).c_str()
 
 //---------------------------------------------------------------------------------------------------------------

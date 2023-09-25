@@ -36,15 +36,10 @@ public:
 
 };
 
-
-
 namespace BoundaryConditions
 {
     namespace Periodic
     {
-        double Image( double );
-        double Distance( double, double );
-        double Distance_sq( double, double );
         double Distance_sq( Vector<double, D> &, Vector<double, D> & );
         double Distance( Vector<double, D> &, Vector<double, D> & );
         Vector<double, D> Relative( Vector<double, D>, Vector<double, D> );
@@ -57,54 +52,34 @@ namespace BoundaryConditions
 }
 
 //-----------------------------------------------------------------------------
+// Macros
+
+#define IMAGE(x) ( (x) + ( H(-x) - static_cast<int>( (x) / L ) ) * L )
+
+#define DIST(x) ( \
+\
+    ( (x) > L_H )  ? \
+    ABS( (x) - L ) : \
+    ( (x) < -L_H ) ? \
+    ABS( (x) + L ) : \
+    ABS(x) )
+
+#define DIST_SQ(x) ( \
+\
+    ( (x) > L_H )  ? \
+    SQUARE( (x) - L ) : \
+    ( (x) < -L_H ) ? \
+    SQUARE( (x) + L ) : \
+    SQUARE(x) )
+
+//-----------------------------------------------------------------------------
 // Inline functions
-
-inline double BoundaryConditions::Periodic::Image( double x )
-{
-    if ( x >= 0 && x < L )
-        return x;
-    else
-    {
-        if ( x < 0 )
-        {
-            do
-            {
-                x += L;
-            } while ( x < 0 );
-            return x;
-        }
-        else
-        {
-            do
-            {
-                x -= L;
-            } while ( x > L );
-            return x;
-        }
-    }
-}
-
-inline double BoundaryConditions::Periodic::Distance( double x, double y )
-{
-    double d = x - y;
-    if ( d > L_H )
-        d = d - L;
-    else if ( d < -L_H )
-        d = d + L;
-    return d;
-}
-
-inline double BoundaryConditions::Periodic::Distance_sq( double x, double y )
-{
-    double d = Distance( x, y );
-    return d * d;
-}
 
 inline double BoundaryConditions::Periodic::Distance_sq( Vector<double, D> & a, Vector<double, D> & b )
 {
     double Sum = 0;
     for( int i = 0; i < D; i++ )
-       Sum = Sum + Distance_sq( a.x[i], b.x[i] );
+       Sum = Sum + DIST_SQ( a.x[i] - b.x[i] );
     
     return Sum;
 }
@@ -118,7 +93,7 @@ inline Vector<double, D> BoundaryConditions::Periodic::Relative( Vector<double, 
 {
     Vector<double, D> Diff;
     for( int i = 0; i < D; i++ )
-       Diff.x[i] = Distance( a.x[i], b.x[i] );
+       Diff.x[i] = DIST( a.x[i] - b.x[i] );
 
     return Diff;
 }

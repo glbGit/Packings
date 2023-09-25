@@ -120,10 +120,10 @@ double Distribution::RandomDiameter( const Info & d )
     switch ( d.type )
     {
     case Uniform:
-        diameter = u_rand_in( a, b );
+        diameter = RAND_IN( a, b );
         break;
     case Binary:
-        diameter = ( u_rand < d.param[0] ) ? b : a;
+        diameter = ( RAND < d.param[0] ) ? b : a;
         break;
     case PowerLaw:
     {
@@ -135,7 +135,7 @@ double Distribution::RandomDiameter( const Info & d )
             A = ( 1 - n ) / ( pow( d.sigma_max, 1 - n ) - pow( d.sigma_min, 1 - n ) );
         double _a = A / pow( b, n );
         double _b = A / pow( a, n );
-        double rnd = u_rand_in( _a, _b );
+        double rnd = RAND_IN( _a, _b );
         double x = pow( rnd / A, -1. / n );
         diameter = x;
         break;
@@ -151,9 +151,9 @@ double Distribution::RandomDiameter( const Info & d )
         {
             do
             {
-                u1 = u_rand;
+                u1 = RAND;
             } while ( u1 <= Epsilon );
-        u2 = u_rand;
+        u2 = RAND;
 
         mag = sigma_z * sqrt( -2.0 * log(u1) );
         z = mag * cos(2 * Pi * u2) + mu_z;

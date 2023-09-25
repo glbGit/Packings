@@ -610,13 +610,13 @@ int Packing::Step()
             for ( int i = 0; i < N; i++ ) 
             {
                 no_overlap = true;
-                rnd = u_rand;
+                rnd = RAND;
                 if ( rnd < 1 - SwapChance )                    /* Standard Monte Carlo move */
                 { 
 			        double scalingFactor = 1 / ( p[i].diameter * p[i].diameter );
 			        scalingFactor = scalingFactor < b->SectorLength ? scalingFactor : b->SectorLength;
                     for ( int k = 0; k < D; k++ )
-                        _r.x[k] = Image( p[i].position.x[k] + ( u_rand - 0.5 ) * Delta_r * scalingFactor );
+                        _r.x[k] = Image( p[i].position.x[k] + ( RAND - 0.5 ) * Delta_r * scalingFactor );
                     this->NewState( i, _r, c_p, no_overlap );
                     if ( no_overlap ) 
                     {
@@ -677,9 +677,9 @@ int Packing::Step()
             {
                 no_overlap = true;
                 for ( int k = 0; k < D; k++ )
-                    _r.x[k] = Image( p[i].position.x[k] + ( u_rand - 0.5 ) * Delta_r );
+                    _r.x[k] = Image( p[i].position.x[k] + ( RAND - 0.5 ) * Delta_r );
                 dE = this->NewState_( i, _r, c_p, no_overlap );
-                rnd = u_rand;
+                rnd = RAND;
                 if ( rnd < exp( -dE / T ) && no_overlap ) 
                 {
                     accept++;
