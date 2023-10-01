@@ -28,7 +28,7 @@ namespace Constant
     static constexpr UL          MaxSteps = 1000;                       // Max iterations
     static constexpr double      T = 0.04;                              // Temperature
     static constexpr double      SwapChance = 0.2;                           // Swap probability
-    static constexpr double      Delta_r = 0.0005;                        // Max side displacement 
+    static constexpr double      Delta_r = 0.05;                        // Max side displacement 
     static constexpr double      Phi_0 = 0.1;                           // Initial packing fraction
     static constexpr double      Phi_t = 0.7;                           // Target packing fraction
     static const bool            InitialRelaxation = false;             // If true, perform a very brief relaxation in a soft repulsive potential. 

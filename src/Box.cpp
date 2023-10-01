@@ -7,12 +7,12 @@ Box::Box( double SigmaMax ) :
     HalfSize ( 0.5 * L )
 {
     Volume = pow( L, D );
-    sectorsPerSide = (int ) ( L / SigmaMax );
-    numOfSectors = Packings::iPow( sectorsPerSide, D );
-    SectorLength = (double ) L / sectorsPerSide;
+    sectorsPerSide = static_cast<int>( L / SigmaMax );
+    numSectors = Packings::iPow( sectorsPerSide, D );
+    SectorLength = static_cast<double>(L) / sectorsPerSide;
     SectorLengthInverse = 1. / SectorLength;
-    numOfNeighborSectors = ( Packings::iPow( 3, D ) - 1 ) / 2;
-    s = new Sector[ numOfSectors ];
+    numNeighborSectors = ( Packings::iPow( 3, D ) - 1 ) / 2;
+    s = new Sector[ numSectors ];
 
 }
 
@@ -27,7 +27,7 @@ Box::Sector::Sector()
 
 void Box::MakeNeighbors()
 {
-    for ( int l = 0; l < numOfSectors; l++ )
+    for ( int l = 0; l < numSectors; l++ )
     { 
         // Assign coordinates to sectors
         int residue = l;
@@ -43,7 +43,7 @@ void Box::MakeNeighbors()
         for (int k = 0; k < D; k++)
             w.x[k] = 1;
 
-        for (int i = 0; i < numOfNeighborSectors; i++)
+        for (int i = 0; i < numNeighborSectors; i++)
         {
             for (int k = 0; k < D; k++)
             {
@@ -58,21 +58,21 @@ void Box::MakeNeighbors()
     }
 }
 
-int Box::Decrease( int Layer, Vector<int, D> & SectorCoord )
+int Box::Decrease( int layer, Vector<int, D> & sectorCoord )
 {
     int top = 1, bottom = -1;
-    if ( Layer < 0 || Layer >= D )
+    if ( layer < 0 || layer >= D )
         return 1;
-    SectorCoord.x[ Layer ] -= 1;
-    if ( SectorCoord.x[ Layer ] < bottom )
+    sectorCoord.x[ layer ] -= 1;
+    if ( sectorCoord.x[ layer ] < bottom )
     {
-        SectorCoord.x[ Layer ] = top;
-        return Decrease( Layer - 1, SectorCoord );
+        sectorCoord.x[ layer ] = top;
+        return Decrease( layer - 1, sectorCoord );
     }
     return 0;
 }
 
-int Box::FindSector( Vector<int, D> & SectorCoord )
+int Box::FindSector( Vector<int, D> & sectorCoord )
 {
     int n = 0;
     for ( int k = 0; k < D; k++ )
@@ -80,7 +80,7 @@ int Box::FindSector( Vector<int, D> & SectorCoord )
         int c = 1;
         for ( int l = k; l < D - 1; l++ )
             c = c * sectorsPerSide;
-        n = n + SectorCoord.x[k] * c;
+        n = n + sectorCoord.x[k] * c;
     }
     return n;
 }

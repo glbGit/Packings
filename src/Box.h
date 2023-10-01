@@ -30,9 +30,9 @@ public:
     double              Volume;
     double              SectorLength;
     double              SectorLengthInverse;
-    int                 numOfSectors;
+    int                 numSectors;
     int                 sectorsPerSide;
-    int                 numOfNeighborSectors;
+    int                 numNeighborSectors;
 
 };
 
@@ -54,7 +54,7 @@ namespace BoundaryConditions
 //-----------------------------------------------------------------------------
 // Macros
 
-#define IMAGE(x) ( (x) + ( H(-x) - static_cast<int>( (x) / L ) ) * L )
+#define IMAGE(x) ( (x) + ( H(-x) - (int )( (x) / L ) ) * L )
 
 #define DIST(x) ( \
 \

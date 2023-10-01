@@ -358,7 +358,7 @@ void Packing::FullUpdate()
     }
     phi = phi * vol_const;
         
-    for ( int k = 0; k < b->numOfSectors; k++ ) 
+    for ( int k = 0; k < b->numSectors; k++ ) 
     {       /* This sector */
         for ( auto i : b->s[k].member_list )
         {
@@ -473,7 +473,7 @@ void Packing::Update( System::State state )
     {
         for ( int i = 0; i < N; i++ )  this->p[i].first_neighbors.clear();
         
-        for ( int k = 0; k < b->numOfSectors; k++ ) 
+        for ( int k = 0; k < b->numSectors; k++ ) 
         {       /* This sector */
             for ( auto i : b->s[k].member_list )
             {
@@ -615,8 +615,8 @@ int Packing::Step()
                 { 
 			        double scalingFactor = 1 / ( p[i].diameter * p[i].diameter );
 			        scalingFactor = scalingFactor < b->SectorLength ? scalingFactor : b->SectorLength;
-                    for ( int k = 0; k < D; k++ )
-                        _r.x[k] = IMAGE( p[i].position.x[k] + ( RAND - 0.5 ) * Delta_r * scalingFactor );
+                    for (int k = 0; k < D; k++)
+                        _r.x[k] = IMAGE(p[i].position.x[k] + (RAND - 0.5) * Delta_r * scalingFactor);       // TO FIX
                     this->NewState( i, _r, c_p, no_overlap );
                     if ( no_overlap ) 
                     {
