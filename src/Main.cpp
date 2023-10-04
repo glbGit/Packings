@@ -16,9 +16,9 @@ Potential System::Variables::interaction_type = Potential::Hard;
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
-int main() 
+int main()
 {
-	srand(321);
+	srand( 321 );
 
 	/* Entry point */
 	Time( On::Begin );

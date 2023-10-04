@@ -49,16 +49,16 @@ namespace Constant
 //---------------------------------------------------------------------------------------------------------------
 // Flags
 
-#define NULL_PTR                            0x01
-#define DIR_NOT_FOUND                       0x02
-#define EMPTY_LINE                          0x06
-#define WRONG_INPUT_FORMAT                  0x03
-#define INSUFFICIENT_DATA                   0x04
-#define INVALID_INTERACTION                 0x05
-#define INVALID_PARAMETER                   0x07
-#define UNDEFINED_DISTRIBUTION              0x08
-#define SECTOR_FAIL                         0x09
-#define STEPS_OVERFLOW                      0xf0
-#define RELOCATION_OVERFLOW                 0xf1
+#define NULL_PTR                            0x001
+#define DIR_NOT_FOUND                       0x002
+#define EMPTY_LINE                          0x004
+#define WRONG_INPUT_FORMAT                  0x008
+#define INSUFFICIENT_DATA                   0x010
+#define INVALID_INTERACTION                 0x020
+#define INVALID_PARAMETER                   0x040
+#define UNDEFINED_DISTRIBUTION              0x080
+#define SECTOR_FAIL                         0x100
+#define STEPS_OVERFLOW                      0xf01
+#define RELOCATION_OVERFLOW                 0xf02
 #define NO_INDEX                            -99
 

@@ -54,7 +54,7 @@ namespace BoundaryConditions
 //-----------------------------------------------------------------------------
 // Macros
 
-#define IMAGE(x) ( (x) + ( H(-x) - (int )( (x) / L ) ) * L )
+#define IMAGE(x) ( (x) + ( HVSD(-(x)) - (int )( (x) / L ) ) * L )
 
 #define DIST(x) ( \
 \
