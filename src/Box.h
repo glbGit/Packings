@@ -51,7 +51,7 @@ namespace BoundaryConditions
 
 }
 
-//-----------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------
 // Macros
 
 #define IMAGE(x) ( (x) + ( HVSD(-(x)) - (int )( (x) / L ) ) * L )
@@ -72,7 +72,7 @@ namespace BoundaryConditions
     SQUARE( (x) + L ) : \
     SQUARE(x) )
 
-//-----------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------
 // Inline functions
 
 inline double BoundaryConditions::Periodic::Distance_sq( Vector<double, D> & a, Vector<double, D> & b )

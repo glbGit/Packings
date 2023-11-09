@@ -4,7 +4,7 @@
 
 #define _USE_MATH_DEFINES
 
-//---------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------
 // Macros
 
 #define RAND ( (double )rand() / RAND_MAX )                             // Uniform-distributed random number in [0,1].
@@ -17,7 +17,7 @@
 
 #define to_cstr(val) std::to_string(val).c_str()
 
-//---------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------
 // Functions
 
 
@@ -36,3 +36,8 @@ namespace Packings
     void Time( On _time );
     void Exit( int code, std::vector<const char *> message );
 }
+
+// TODO
+// Make assert functions
+// Move math functions into Math.h 
+
