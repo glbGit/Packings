@@ -59,7 +59,6 @@ public:
     Type              x[ Dim ];
 };
 
-
 //---------------------------------------------------------------------------------------------
 // Constructors
 
@@ -71,10 +70,10 @@ Vector<Type, Dim>::Vector()
 }
 
 template <class Type, int Dim>
-Vector<Type, Dim>::Vector( Type Comp )
+Vector<Type, Dim>::Vector( Type comp )
 {
 	for (size_t i = 0; i < Dim; i++)
-		x[i] = Comp;
+		x[i] = comp;
 }
 
 template <class Type, int Dim>
@@ -83,20 +82,20 @@ Vector<Type, Dim>::Vector( Type Mag, Direction Dir )
 }
 
 template <class Type, int Dim>
-Vector<Type, Dim>::Vector( const Vector<Type, Dim> & Vec )
+Vector<Type, Dim>::Vector( const Vector<Type, Dim> & vec )
 {
 	for (size_t i = 0; i < Dim; i++)
-		x[i] = Vec.x[i];
+		x[i] = vec.x[i];
 }
 
 //---------------------------------------------------------------------------------------------
 // Operators
 
 template <class Type, int Dim>
-void Vector<Type, Dim>::operator=( double c ) 
+void Vector<Type, Dim>::operator=( double comp ) 
 {
 	for ( int i = 0; i < Dim; i++ )
-		x[i] = c;
+		x[i] = comp;
 }
 
 template <class Type, int Dim>
@@ -104,7 +103,7 @@ Vector<Type, Dim> Vector<Type, Dim>::operator+( Vector v )
 {
 	Vector w;
 	for ( int i = 0; i < Dim; i++ )
-		w.x[i] = x[i] + v.x[i];
+		w[i] = x[i] + v[i];
 	return w;
 }
 
@@ -113,7 +112,7 @@ Vector<Type, Dim> Vector<Type, Dim>::operator-( Vector v )
 {
 	Vector w;
 	for ( int i = 0; i < Dim; i++ )
-		w.x[i] = x[i] - v.x[i];
+		w[i] = x[i] - v[i];
 	return w;
 }
 
@@ -122,7 +121,7 @@ Vector<Type, Dim> Vector<Type, Dim>::operator*( double k )
 {
 	Vector w;
 	for ( int i = 0; i < Dim; i++ )
-		w.x[i] = x[i] * k;
+		w[i] = x[i] * k;
 	return w;
 }
 
@@ -133,7 +132,7 @@ Vector<Type, Dim> Vector<Type, Dim>::operator/( double k )
 	k = 1.0f / k;
 	Vector w;
 	for ( int i = 0; i < Dim; i++ )
-		w.x[i] = x[i] * k;
+		w[i] = x[i] * k;
 	return w;
 }
 
@@ -142,7 +141,7 @@ double Vector<Type, Dim>::operator*( Vector v )
 {
 	double Scalar = 0;
 	for ( int i = 0; i < Dim; i++ )
-		Scalar += x[i] * v.x[i];
+		Scalar += x[i] * v[i];
 	return Scalar;
 }
 
@@ -152,9 +151,9 @@ Vector<Type, Dim> Vector<Type, Dim>::operator^( Vector v )
 	if ( Dim == 3 )
 	{
 		Vector w;
-		w.x[0] = x[1] * v.x[2] - x[2] * v.x[1];
-		w.x[1] = x[2] * v.x[0] - x[0] * v.x[2];
-		w.x[2] = x[0] * v.x[1] - x[1] * v.x[0];
+		w[0] = x[1] * v[2] - x[2] * v[1];
+		w[1] = x[2] * v[0] - x[0] * v[2];
+		w[2] = x[0] * v[1] - x[1] * v[0];
 		return w;
 	}
 	else return Vector(0);
@@ -164,7 +163,7 @@ template <class Type, int Dim>
 bool Vector<Type, Dim>::operator==( Vector v ) 
 {
 	for ( int i = 0; i < Dim; i++ )
-		if ( fabs( x[i] - v.x[i] ) > Epsilon ) return false;
+		if ( fabs( x[i] - v[i] ) > Epsilon ) return false;
 	return true;
 }
 
@@ -172,7 +171,7 @@ template <class Type, int Dim>
 void Vector<Type, Dim>::operator+=( Vector & v ) 
 {
 	for ( int i = 0; i < Dim; i++ )
-		x[i] = x[i] + v.x[i];
+		x[i] = x[i] + v[i];
 }
 
 //---------------------------------------------------------------------------------------------
